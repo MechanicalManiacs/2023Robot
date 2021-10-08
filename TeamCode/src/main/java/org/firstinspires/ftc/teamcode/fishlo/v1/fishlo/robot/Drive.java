@@ -36,26 +36,23 @@ public class Drive extends SubSystem {
         frontRight = robot.hardwareMap.dcMotor.get("fronRight");
         backLeft = robot.hardwareMap.dcMotor.get("backLeft");
         backRight = robot.hardwareMap.dcMotor.get("backRight");
+
+        robot.telemetry.addLine("Motors initialized");
     }
 
     @Override
     public void handle() {
-        double driveSpeed = -robot.gamepad1.left_stick_y;
-        double rightY = robot.gamepad1.right_stick_y;
+        double driveSpeed = -robot.gamepad1.left_stick_y / 3;
+        double rightY = robot.gamepad1.right_stick_y / 3;
         double turnSpeed = 0;
-        double strafeSpeed = robot.gamepad1.left_stick_x;
+        double strafeSpeed = robot.gamepad1.left_stick_x / 3;
 
 
         if (Math.abs(robot.gamepad1.right_stick_x) > 0.1) {
-            turnSpeed = robot.gamepad1.right_stick_x;
+            turnSpeed = robot.gamepad1.right_stick_x / 3;
         }
 
-        if(robot.gamepad1.x) {
-            driveIndex = 0;
-        }
-        if(robot.gamepad1.b) {
-            driveIndex = 1;
-        }
+        driveIndex = 1;
 
         driveType = driveControls[driveIndex];
         runDrive(driveType, driveSpeed, strafeSpeed, turnSpeed, rightY, -driveSpeed);
