@@ -71,9 +71,8 @@ public class Vision extends SubSystem {
     public position getPosition() {
         position pos = position.CENTER;
         double angle = pipeline.getAngle(pipeline.getCenter(), 0);
-        
-        robot.telemetry.addData("point x", pipeline.getCenter().x);
-        robot.telemetry.addData("point y", pipeline.getCenter().y);
+
+        robot.telemetry.addData("Center of QR Code", pipeline.getCenter().x + " + " + pipeline.getCenter().y);
 
         if (angle >= -39 && angle <= -13) {
             pos = position.LEFT;

@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 import org.apache.commons.math3.fraction.Fraction;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.opencv.objdetect.QRCodeDetector;
 
@@ -49,8 +51,13 @@ public class VisionPipeline extends OpenCvPipeline {
         if (points.empty()) {
             data = "Not Found";
         }
-        else {
+        else if (!points.empty()){
             center = new Point(points.get(points.rows() / 2, points.cols() / 2));
+            for (int i = 0; i < points.cols(); i++) {
+                Point p1 = new Point(points.get(0, i));
+                Point p2 = new Point(points.get(0, (i + 1) % 4));
+                Imgproc.line(input, p1, p2, new Scalar(0, 69, 255), 4);
+            }
         }
         return input;
     }

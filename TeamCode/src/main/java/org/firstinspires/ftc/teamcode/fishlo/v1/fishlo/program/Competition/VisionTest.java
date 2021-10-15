@@ -26,6 +26,11 @@ public class VisionTest extends FishloAutonomousProgram {
 
     @Override
     public void main() {
-
+        while (!isStopRequested()) {
+            telemetry.setAutoClear(true);
+            telemetry.addData("Data", data);
+            telemetry.addData("Data Validity", vision.validateData(true));
+            telemetry.addData("position", vision.getPosition());
+        }
     }
 }
