@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import org.apache.commons.math3.fraction.Fraction;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.opencv.objdetect.QRCodeDetector;
 
 public class VisionPipeline extends OpenCvPipeline {
-
-    private Mat matYCrCb = new Mat();
 
     private Mat points = new Mat();
 
@@ -16,11 +14,44 @@ public class VisionPipeline extends OpenCvPipeline {
 
     private String data = new String();
 
-    private Point topLeft;
+    private Point center;
+
+    protected int imageWidth;
+    protected int imageHeight;
+
+    private double fov;
+    private double horizontalFocalLength;
+    private double verticalFocalLength;
+
+    public VisionPipeline(double fov) {
+        this.fov = fov;
+    }
+
+    @Override
+    public void init(Mat mat) {
+        super.init(mat);
+
+        imageWidth = mat.width();
+        imageHeight = mat.height();
+
+        double diagonalView = Math.toRadians(this.fov);
+        Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
+        int horizontalRatio = aspectFraction.getNumerator();
+        int verticalRatio = aspectFraction.getDenominator();
+        double diagonalAspect = Math.hypot(horizontalRatio, verticalRatio);
+        double horizontalView = Math.atan(Math.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
+        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizontalView / 2));
+    }
 
     @Override
     public Mat processFrame(Mat input) {
-        data = detector.detectAndDecode(input);
+        data = detector.detectAndDecode(input, points);
+        if (points.empty()) {
+            data = "Not Found";
+        }
+        else {
+            center = new Point(points.get(points.rows() / 2, points.cols() / 2));
+        }
         return input;
     }
 
@@ -28,8 +59,13 @@ public class VisionPipeline extends OpenCvPipeline {
         return data;
     }
 
-    public Point getPoint() {
-        return topLeft;
+    public Point getCenter() {
+        return center;
+    }
+
+    public double getAngle(Point point, double offsetCenterX) {
+        double targetCenterX = point.x;
+        return Math.toDegrees(Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength));
     }
 
 }

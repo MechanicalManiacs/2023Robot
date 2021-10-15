@@ -14,6 +14,8 @@ public class Vision extends SubSystem {
     private VisionPipeline pipeline;
     private OpenCvCameraRotation ORIENTATION = OpenCvCameraRotation.UPRIGHT;
 
+    private int fov = 78;
+
     public static int CAMERA_WIDTH = 320, CAMERA_HEIGHT = 240;
 
     public enum position {
@@ -33,7 +35,7 @@ public class Vision extends SubSystem {
                 robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, webcamName), cameraMonitorViewId);
 
-        camera.setPipeline(pipeline = new VisionPipeline());
+        camera.setPipeline(pipeline = new VisionPipeline(fov));
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
@@ -68,16 +70,18 @@ public class Vision extends SubSystem {
 
     public position getPosition() {
         position pos = position.CENTER;
-        double point_x = pipeline.getPoint().x;
-        robot.telemetry.addData("point x", point_x);
-        robot.telemetry.addData("point y", pipeline.getPoint().y);
-        if (point_x >= 0 && point_x < 106) {
+        double angle = pipeline.getAngle(pipeline.getCenter(), 0);
+        
+        robot.telemetry.addData("point x", pipeline.getCenter().x);
+        robot.telemetry.addData("point y", pipeline.getCenter().y);
+
+        if (angle >= -39 && angle <= -13) {
             pos = position.LEFT;
         }
-        else if (point_x >= 106 && point_x < 213) {
+        else if (angle >= -13 && angle <= 13) {
             pos = position.CENTER;
         }
-        else if (point_x >= 213 && point_x < 320) {
+        else if (angle >= 13 && angle <= 39) {
             pos = position.RIGHT;
         }
         else {
