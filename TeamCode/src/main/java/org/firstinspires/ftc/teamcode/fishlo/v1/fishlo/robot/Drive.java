@@ -46,8 +46,6 @@ public class Drive extends SubSystem {
         backRight = new Motor(robot.hardwareMap, "backRight");
         claw = robot.hardwareMap.servo.get("claw");
         xDrive = new HDrive(frontLeft, frontRight, backLeft, backRight);
-
-        robot.telemetry.addLine("Motors initialized");
     }
 
     @Override
