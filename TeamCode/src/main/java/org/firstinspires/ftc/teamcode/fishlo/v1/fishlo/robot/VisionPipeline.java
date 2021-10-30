@@ -23,7 +23,6 @@ public class VisionPipeline extends OpenCvPipeline {
 
     private double fov;
     private double horizontalFocalLength;
-    private double verticalFocalLength;
 
     public VisionPipeline(double fov) {
         this.fov = fov;
