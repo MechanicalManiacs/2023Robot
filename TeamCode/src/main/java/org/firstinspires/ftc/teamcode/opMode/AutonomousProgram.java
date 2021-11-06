@@ -31,8 +31,8 @@ public abstract class AutonomousProgram extends LinearOpMode {
      * The main method is for code after start is pressed
      * The preMain method is for code during the init phase
      */
-    public abstract void main();
     public abstract void preMain();
+    public abstract void main();
 
     @Override
     public final void runOpMode() throws InterruptedException {
