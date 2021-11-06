@@ -80,7 +80,6 @@ import com.qualcomm.ftccommon.configuration.FtcLoadFileActivity;
 import com.qualcomm.ftccommon.configuration.RobotConfigFile;
 import com.qualcomm.ftccommon.configuration.RobotConfigFileManager;
 import com.qualcomm.ftcrobotcontroller.BuildConfig;
-import com.qualcomm.ftcrobotcontroller.BuildConfig.*;
 import com.qualcomm.ftcrobotcontroller.R;
 import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
@@ -95,6 +94,7 @@ import com.qualcomm.robotcore.util.Device;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.util.WebHandlerManager;
 import com.qualcomm.robotcore.util.WebServer;
 import com.qualcomm.robotcore.wifi.NetworkConnection;
 import com.qualcomm.robotcore.wifi.NetworkConnectionFactory;
@@ -333,7 +333,7 @@ public class FtcRobotControllerActivity extends Activity
           }
         });
         popupMenu.inflate(R.menu.ftc_robot_controller);
-        FtcDashboard.populateMenu(popupMenu.getMenu());
+        FtcDashboard.populateMenu(context, popupMenu.getMenu());
         AnnotatedHooksClassFilter.getInstance().callOnCreateMenuMethods(
             FtcRobotControllerActivity.this, popupMenu.getMenu());
         popupMenu.show();
@@ -407,12 +407,12 @@ public class FtcRobotControllerActivity extends Activity
       initWifiMute(true);
     }
 
-    FtcAboutActivity.setBuildTimeFromBuildConfig(BuildConfig.BUILD_TIME);
+    FtcAboutActivity.setBuildTimeFromBuildConfig(BuildConfig.APP_BUILD_TIME);
 
     // check to see if there is a preferred Wi-Fi to use.
     checkPreferredChannel();
 
-    FtcDashboard.start();
+    FtcDashboard.start(context);
     AnnotatedHooksClassFilter.getInstance().callOnCreateMethods(this);
   }
 
@@ -486,7 +486,7 @@ public class FtcRobotControllerActivity extends Activity
 
     RobotLog.cancelWriteLogcatToDisk();
 
-    FtcDashboard.stop();
+    FtcDashboard.stop(context);
     AnnotatedHooksClassFilter.getInstance().callOnDestroyMethods(this);
   }
 
@@ -543,7 +543,7 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.ftc_robot_controller, menu);
-    FtcDashboard.populateMenu(menu);
+    FtcDashboard.populateMenu(context, menu);
     AnnotatedHooksClassFilter.getInstance().callOnCreateMenuMethods(this, menu);
     return true;
   }
@@ -711,7 +711,7 @@ public class FtcRobotControllerActivity extends Activity
       }
     });
 
-    FtcDashboard.attachWebServer(service.getWebServer());
+    FtcDashboard.attachWebServer(context, service.getWebServer().getWebHandlerManager());
     AnnotatedHooksClassFilter.getInstance().callWebHandlerRegistrarMethods(this,
         service.getWebServer().getWebHandlerManager());
   }
@@ -759,7 +759,7 @@ public class FtcRobotControllerActivity extends Activity
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();
 
-    FtcDashboard.attachEventLoop(eventLoop);
+    FtcDashboard.attachEventLoop(context, eventLoop);
     AnnotatedHooksClassFilter.getInstance().callOnCreateEventLoopMethods(this, eventLoop);
   }
 
