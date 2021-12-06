@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.opmode.AutomaticFeedforwardTuner;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
 
@@ -45,7 +46,6 @@ public class Drive extends SubSystem {
         backLeft = new Motor(robot.hardwareMap, "backLeft");
         backRight = new Motor(robot.hardwareMap, "backRight");
         claw = robot.hardwareMap.servo.get("claw");
-        xDrive = new HDrive(frontLeft, frontRight, backLeft, backRight);
     }
 
     @Override
