@@ -46,9 +46,10 @@ public class ThreadBuilder extends FishloAutonomousProgram {
         return super.buildRobot();
     }
 
+    // edited start position(rahul)
     @Override
     public void preMain() {
-        startPose = new Pose2d(-63, -40, Math.toRadians(180));
+        startPose = new Pose2d(-36, -72, Math.toRadians(180));
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         mecanumDrive.setPoseEstimate(startPose);
         telemetry.addLine("Ready to Start |>");
@@ -157,15 +158,15 @@ class TrajectoryBuilderA extends Thread {
     public void run() {
         try
         {
-            // Build trajectories
+            // Build trajectories (rahul edited position)
             Trajectory targetZoneATraj1 = mecanumDrive.trajectoryBuilder(startPose, true)
-                    .splineToConstantHeading(new Vector2d(-20, -49), Math.toRadians(0))
-                    .splineToConstantHeading(new Vector2d(21, -41), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(-36, -54), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(-36, -36), Math.toRadians(0))
                     .build();
             trajectoryList.add(targetZoneATraj1);
 
             Trajectory targetZoneATraj2 = mecanumDrive.trajectoryBuilder(targetZoneATraj1.end())
-                    .forward(14)
+                    .strafeRight(10)
                     .build();
             trajectoryList.add(targetZoneATraj2);
 
