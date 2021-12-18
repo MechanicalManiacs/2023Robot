@@ -14,13 +14,16 @@ import org.firstinspires.ftc.teamcode.robot.SubSystem;
 
 public class Drive extends SubSystem {
 
-    private Motor frontLeft, frontRight, backLeft, backRight;
+    DcMotor frontLeft;
+    DcMotor frontRight;
+    DcMotor backLeft;
+    DcMotor backRight;
 
     HDrive xDrive;
 
     SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
 
-    Servo claw;
+    DcMotor claw;
 
     private enum DriveControls {
         TANK,
@@ -41,11 +44,11 @@ public class Drive extends SubSystem {
 
     @Override
     public void init() {
-        frontLeft = new Motor(robot.hardwareMap, "frontLeft");
-        frontRight = new Motor(robot.hardwareMap, "frontRight");
-        backLeft = new Motor(robot.hardwareMap, "backLeft");
-        backRight = new Motor(robot.hardwareMap, "backRight");
-        claw = robot.hardwareMap.servo.get("claw");
+        frontLeft = robot.hardwareMap.dcMotor.get("frontleft");
+        frontRight = robot.hardwareMap.dcMotor.get("frontright");
+        backLeft = robot.hardwareMap.dcMotor.get("backleft");
+        backRight = robot.hardwareMap.dcMotor.get("backright");
+        claw = robot.hardwareMap.dcMotor.get("claw");
     }
 
     @Override
@@ -59,10 +62,10 @@ public class Drive extends SubSystem {
 
         driveType = driveControls[driveIndex];
         if (robot.gamepad1.y) {
-            claw.setPosition(0.5);
+
         }
         if (robot.gamepad1.a) {
-            claw.setPosition(0);
+
         }
         mecanumDrive.setWeightedDrivePower(new Pose2d(
                 robot.gamepad1.left_stick_y,
@@ -76,57 +79,66 @@ public class Drive extends SubSystem {
         robot.telemetry.addData("Drive - Dat - GamepadX", robot.gamepad1.left_stick_x);
     }
 
-    @Override
-    public void stop() {
-
+    public void strafe(double power)
+    {
+        frontLeft.setPower(power);
+        backRight.setPower(power);
+        frontRight.setPower(-power);
+        backLeft.setPower(-power);
     }
 
-//    public void runDrive(DriveControls driveType) {
-//        switch (driveType) {
-//            case ARCADE:
-//                xDrive.driveRobotCentric(
-//                        gamepad1.getLeftX(),
-//                        gamepad1.getLeftY(),
-//                        gamepad1.getRightY()
-//                );
-//                break;
-//
-//            default:
-//                driveType = DriveControls.ARCADE;
-//        }
-//    }
+    @Override
+    public void stop()
+    {
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+        backLeft.setPower(0);
+    }
 
-//    private void left(double power) {
-//        try {
-//            frontLeft.set(power);
-//            backLeft.set(power);
-//        } catch(Exception ex) {}
-//    }
-//
-//    private void right(double power) {
-//        try {
-//            frontRight.set(power);
-//            backRight.set(power);
-//        } catch(Exception ex) {}
-//    }
-//
-//    public void drive(double leftPower, double rightPower) {
-//        left(leftPower);
-//        right(rightPower);
-//    }
-//
-//    public void strafe(double power) {
-//        frontLeft.set(power);
-//        backLeft.set(-power);
-//        frontRight.set(-power);
-//        backRight.set(power);
-//    }
-//
-//    public void turn (double power) {
-//        frontLeft.set(power);
-//        backLeft.set(power);
-//        frontRight.set(-power);
-//        backRight.set(-power);
-//    }
+    public void drive(double inches, double power)
+    {
+        int diameter = 1;
+        double ticksPerRev = frontLeft.getMotorType().getTicksPerRev();
 
+        //Rest Encoders.
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //Calculate tick value that the motors need to turn.
+        double circumference = 3.14*diameter;
+        double rotationsNeeded = inches/circumference;
+        int encoderDrivingTarget = (int)(rotationsNeeded*ticksPerRev);
+
+        //Set tick value to the motors' target position.
+        frontLeft.setTargetPosition(encoderDrivingTarget);
+        frontRight.setTargetPosition(encoderDrivingTarget);
+        backLeft.setTargetPosition(encoderDrivingTarget);
+        backRight.setTargetPosition(encoderDrivingTarget);
+
+        //Set the desired power
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backLeft.setPower(power);
+        backRight.setPower(power);
+
+        //Set the mode of the motors to run to the target position.
+        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while(frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy() )
+        {
+            //Do nothing until motors catch up.
+        }
+
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+
+    }
 }
