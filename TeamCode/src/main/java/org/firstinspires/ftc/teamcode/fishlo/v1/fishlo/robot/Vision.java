@@ -1,22 +1,38 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
+import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
 
 public class Vision extends SubSystem {
 
     private OpenCvCamera camera;
-    private String webcamName = "webcam";
-    private VisionPipeline pipeline;
-    private OpenCvCameraRotation ORIENTATION = OpenCvCameraRotation.UPRIGHT;
+    private boolean isUsingWebcam;
+    private String cameraName;
+    private VisionPipeline capstonePipeline;
 
-    private int fov = 78;
+    private int WIDTH = 432;
+    private int HEIGHT = 240;
+    private double thresholdRight = 2 * WIDTH / 3.0;
+    private double thresholdLeft = WIDTH / 3.0;
 
-    public static int CAMERA_WIDTH = 320, CAMERA_HEIGHT = 240;
+    public enum DetectorState {
+        NOT_CONFIGURED,
+        INITIALIZING,
+        RUNNING,
+        INIT_FAILURE_NOT_RUNNING;
+    }
+
+    private DetectorState detectorState = DetectorState.NOT_CONFIGURED;
+
+    private final Object sync = new Object();
 
     public enum position {
         LEFT,
@@ -31,63 +47,105 @@ public class Vision extends SubSystem {
 
     @Override
     public void init() {
-        int cameraMonitorViewId =
-                robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, webcamName), cameraMonitorViewId);
+        synchronized (sync) {
+            if (detectorState == DetectorState.NOT_CONFIGURED) {
+                //This will instantiate an OpenCvCamera object for the camera we'll be using
+                int cameraMonitorViewId = robot.hardwareMap
+                        .appContext.getResources()
+                        .getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
+                if (isUsingWebcam) {
+                    camera = OpenCvCameraFactory.getInstance()
+                            .createWebcam(robot.hardwareMap.get(WebcamName.class, cameraName), cameraMonitorViewId);
+                } else {
+                    camera = OpenCvCameraFactory.getInstance()
+                            .createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+                }
 
-        camera.setPipeline(pipeline = new VisionPipeline(fov));
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, ORIENTATION);
+                //Set the pipeline the camera should use and start streaming
+                camera.setPipeline(capstonePipeline = new VisionPipeline());
+
+
+                detectorState = DetectorState.INITIALIZING;
+
+                camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                    @Override
+                    public void onOpened() {
+
+                        camera.startStreaming(WIDTH, HEIGHT, OpenCvCameraRotation.UPRIGHT);
+
+                        synchronized (sync) {
+                            detectorState = DetectorState.RUNNING;
+                        }
+                    }
+
+                    public void onError(int errorCode) {
+
+                        synchronized (sync) {
+                            detectorState = DetectorState.INIT_FAILURE_NOT_RUNNING; //Set our state
+                        }
+
+                        RobotLog.addGlobalWarningMessage("Warning: Camera device failed to open with EasyOpenCv error: " +
+                                ((errorCode == -1) ? "CAMERA_OPEN_ERROR_FAILURE_TO_OPEN_CAMERA_DEVICE" : "CAMERA_OPEN_ERROR_POSTMORTEM_OPMODE")
+                        ); //Warn the user about the issue
+                    }
+                });
             }
-        });
+        }
     }
 
     @Override
-    public void handle() {
-
-    }
+    public void handle() {}
 
     @Override
     public void stop() {
         camera.stopStreaming();
     }
 
-    public String getQRCodeData() {
-        return pipeline.getData();
+    public OpenCvCamera getCamera() {
+        return camera;
     }
 
-    public boolean validateData(int match_number) {
-        String data = getQRCodeData();
-        return data.equals("16447-" + match_number);
+    public void setLowerBound(Scalar low) {
+        capstonePipeline.setLowerBound(low);
     }
 
-    public boolean validateData(boolean practice) {
-        String data = getQRCodeData();
-        return data.equals("16447");
+    public void setUpperBound(Scalar high) {
+        capstonePipeline.setUpperBound(high);
     }
 
-    public position getPosition() {
-        position pos = position.CENTER;
-        double angle = pipeline.getAngle(pipeline.getCenter(), 0);
+    public void setLowerAndUpperBounds(Scalar low, Scalar high) {
+        capstonePipeline.setLowerAndUpperBounds(low, high);
+    }
 
-        robot.telemetry.addData("Center of QR Code", pipeline.getCenter().x + " + " + pipeline.getCenter().y);
+    // The area below thresholdLeft will be the Left placement, to the right of
+    // thresholdRight will be Right placement, and the area between those is the center
+    // 0.0 to 1.0
+    public void setPercentThreshold(double percentLeft, double percentRight) {
+        thresholdLeft = WIDTH * percentLeft;
+        thresholdRight = WIDTH * percentRight;
+    }
 
-        if (angle >= -39 && angle <= -13) {
-            pos = position.LEFT;
-        }
-        else if (angle >= -13 && angle <= 13) {
-            pos = position.CENTER;
-        }
-        else if (angle >= 13 && angle <= 39) {
-            pos = position.RIGHT;
-        }
-        else {
-            pos = position.NULL;
-        }
+    // 0.0 to WIDTH
+    public void setThreshold(double pixelsLeft, double pixelsRight) {
+        thresholdLeft = pixelsLeft;
+        thresholdLeft = pixelsRight;
+    }
 
-        return pos;
+
+    public Placement getPlacement() {
+        if (capstonePipeline.getCentroid() != null) {
+            if (capstonePipeline.getCentroid().x > thresholdRight)
+                return Placement.RIGHT;
+            else if (capstonePipeline.getCentroid().x < thresholdLeft)
+                return Placement.LEFT;
+        }
+        return Placement.CENTER;
+    }
+
+    public enum Placement {
+        LEFT,
+        RIGHT,
+        CENTER
     }
 
 }

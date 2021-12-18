@@ -2,76 +2,111 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
 import org.apache.commons.math3.fraction.Fraction;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Size;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvPipeline;
-import org.opencv.objdetect.QRCodeDetector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VisionPipeline extends OpenCvPipeline {
 
-    private Mat points = new Mat();
+    // Declare the scalars and mats we will be using
+    private Scalar low;
+    private Scalar high;
 
-    private QRCodeDetector detector = new QRCodeDetector();
+    private Mat mask;
+    private Mat frame;
+    private Mat output;
+    private Point centroid;
 
-    private String data = new String();
-
-    private Point center;
-
-    protected int imageWidth;
-    protected int imageHeight;
-
-    private double fov;
-    private double horizontalFocalLength;
-
-    public VisionPipeline(double fov) {
-        this.fov = fov;
+    // Initializes color bounds declared above to defaults
+    public VisionPipeline() {
+        low = new Scalar(200, 165, 100);
+        high = new Scalar(255, 222, 15);
     }
 
-    @Override
-    public void init(Mat mat) {
-        super.init(mat);
-
-        imageWidth = mat.width();
-        imageHeight = mat.height();
-
-        double diagonalView = Math.toRadians(this.fov);
-        Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
-        int horizontalRatio = aspectFraction.getNumerator();
-        int verticalRatio = aspectFraction.getDenominator();
-        double diagonalAspect = Math.hypot(horizontalRatio, verticalRatio);
-        double horizontalView = Math.atan(Math.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
-        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizontalView / 2));
+    // Allows for user to set their own color bounds
+    public VisionPipeline(Scalar lowerBound, Scalar upperBound) {
+        low = lowerBound;
+        high = upperBound;
     }
 
     @Override
     public Mat processFrame(Mat input) {
-        data = detector.detectAndDecode(input, points);
-        if (points.empty()) {
-            data = "Not Found";
-        }
-        else if (!points.empty()){
-            center = new Point(points.get(points.rows() / 2, points.cols() / 2));
-            for (int i = 0; i < points.cols(); i++) {
-                Point p1 = new Point(points.get(0, i));
-                Point p2 = new Point(points.get(0, (i + 1) % 4));
-                Imgproc.line(input, p1, p2, new Scalar(0, 69, 255), 4);
+        frame = new Mat();
+        output = new Mat();
+        mask = new Mat(output.rows(), output.cols(), CvType.CV_8UC4);
+
+        // Converts the colorspace from RGB to YCrCb
+        Imgproc.cvtColor(input, output, Imgproc.COLOR_RGB2YCrCb);
+        // Creates a mask of all pixels within the specified color bounds
+        Core.inRange(output, low, high, mask);
+        // Puts the mask over the original image
+        Core.bitwise_and(input, input, frame, mask);
+
+        // Blurs the image to smooth it out and reduce unwanted pixels
+        Imgproc.GaussianBlur(mask, mask, new Size(11, 15), 0.0);
+
+        // Initialize the Mat and ArrayList and finds the contours on the image
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        // Contours put simply are outlines of objects with the same color.
+        // The following draws contours onto the frame from the list created above.
+        // During this it searches for the biggest contour and saves it to the variable biggest.
+        if (hierarchy.size().height > 0 && hierarchy.size().width > 0) {
+            MatOfPoint biggest = new MatOfPoint();
+            for (int index = 0; index >= 0; index = (int) hierarchy.get(0, index)[0]) {
+                Imgproc.drawContours(frame, contours, index, new Scalar(88, 0, 0), 2);
+                if (index == 0)
+                    biggest = contours.get(index);
+                else if (contours.get(index).size().area() > contours.get(index - 1).size().area())
+                    biggest = contours.get(index);
             }
+
+            // Creates a point and sets it to the approximate center of the largest contour
+            Moments moments = Imgproc.moments(biggest);
+            centroid = new Point();
+
+            centroid.x = moments.get_m10() / moments.get_m00();
+            centroid.y = moments.get_m01() / moments.get_m00();
+
+            Rect rect = new Rect((int) centroid.x, (int) centroid.y, 10, 10);
+            Imgproc.rectangle(frame, rect, new Scalar(0, 255, 255));
+
         }
-        return input;
+
+        mask.release();
+        hierarchy.release();
+
+        return frame;
     }
 
-    public String getData() {
-        return data;
+    // Returns the center of the largest contour
+    public Point getCentroid() {
+        return centroid;
     }
 
-    public Point getCenter() {
-        return center;
+    // Allows the user to set lower and upper bounds after the file has been initialized
+    public void setLowerBound(Scalar low) {
+        this.low = low;
     }
 
-    public double getAngle(Point point, double offsetCenterX) {
-        double targetCenterX = point.x;
-        return Math.toDegrees(Math.atan((targetCenterX - offsetCenterX) / horizontalFocalLength));
+    public void setUpperBound(Scalar high) {
+        this.high = high;
+    }
+
+    public void setLowerAndUpperBounds(Scalar low, Scalar high) {
+        this.low = low;
+        this.high = high;
     }
 
 }
