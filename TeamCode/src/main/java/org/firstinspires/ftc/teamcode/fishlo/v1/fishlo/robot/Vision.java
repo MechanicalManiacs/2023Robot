@@ -14,9 +14,9 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 public class Vision extends SubSystem {
 
     private OpenCvCamera camera;
-    private boolean isUsingWebcam;
-    private String cameraName;
-    private VisionPipeline capstonePipeline;
+    private boolean isUsingWebcam = true;
+    private String cameraName = "webcam";
+    private VisionPipeline pipeline;
 
     private int WIDTH = 432;
     private int HEIGHT = 240;
@@ -62,7 +62,7 @@ public class Vision extends SubSystem {
                 }
 
                 //Set the pipeline the camera should use and start streaming
-                camera.setPipeline(capstonePipeline = new VisionPipeline());
+                camera.setPipeline(pipeline = new VisionPipeline());
 
 
                 detectorState = DetectorState.INITIALIZING;
@@ -106,15 +106,15 @@ public class Vision extends SubSystem {
     }
 
     public void setLowerBound(Scalar low) {
-        capstonePipeline.setLowerBound(low);
+        pipeline.setLowerBound(low);
     }
 
     public void setUpperBound(Scalar high) {
-        capstonePipeline.setUpperBound(high);
+        pipeline.setUpperBound(high);
     }
 
     public void setLowerAndUpperBounds(Scalar low, Scalar high) {
-        capstonePipeline.setLowerAndUpperBounds(low, high);
+        pipeline.setLowerAndUpperBounds(low, high);
     }
 
     // The area below thresholdLeft will be the Left placement, to the right of
@@ -131,21 +131,20 @@ public class Vision extends SubSystem {
         thresholdLeft = pixelsRight;
     }
 
-
-    public Placement getPlacement() {
-        if (capstonePipeline.getCentroid() != null) {
-            if (capstonePipeline.getCentroid().x > thresholdRight)
-                return Placement.RIGHT;
-            else if (capstonePipeline.getCentroid().x < thresholdLeft)
-                return Placement.LEFT;
-        }
-        return Placement.CENTER;
-    }
-
     public enum Placement {
         LEFT,
         RIGHT,
         CENTER
+    }
+    
+    public Placement getPlacement() {
+        if (pipeline.getCentroid() != null) {
+            if (pipeline.getCentroid().x > thresholdRight)
+                return Placement.RIGHT;
+            else if (pipeline.getCentroid().x < thresholdLeft)
+                return Placement.LEFT;
+        }
+        return Placement.CENTER;
     }
 
 }
