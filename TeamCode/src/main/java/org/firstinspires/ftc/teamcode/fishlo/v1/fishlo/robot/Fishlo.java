@@ -11,6 +11,7 @@ public class Fishlo extends Robot {
 
         putSubSystem("Drive", new Drive(this));
         putSubSystem("Vision", new Vision(this));
+        putSubSystem("Intake", new Intake(this));
     }
 
 }
