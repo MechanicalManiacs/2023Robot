@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.drivebase.HDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -19,11 +22,7 @@ public class Drive extends SubSystem {
     DcMotor backLeft;
     DcMotor backRight;
 
-    HDrive xDrive;
-
-    SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
-
-    DcMotor claw;
+    GamepadEx gamepad1Ex = new GamepadEx(robot.gamepad1);
 
     private enum DriveControls {
         TANK,
@@ -33,13 +32,15 @@ public class Drive extends SubSystem {
     DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
     DriveControls driveType;
     int driveIndex = 0;
+    boolean telemetryEnabled;
     /**
      * Construct a subsystem with the robot it applies to.
      *
      * @param robot
      */
-    public Drive(Robot robot) {
+    public Drive(Robot robot, boolean telemetryEnabled) {
         super(robot);
+        this.telemetryEnabled = telemetryEnabled;
     }
 
     @Override
@@ -48,35 +49,73 @@ public class Drive extends SubSystem {
         frontRight = robot.hardwareMap.dcMotor.get("frontright");
         backLeft = robot.hardwareMap.dcMotor.get("backleft");
         backRight = robot.hardwareMap.dcMotor.get("backright");
-        claw = robot.hardwareMap.dcMotor.get("claw");
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     @Override
     public void handle() {
-        double driveSpeed = robot.gamepad1.left_stick_y / 4;
-        double turnSpeed = 0;
+        double y = -robot.gamepad1.left_stick_y;
+        double x = robot.gamepad1.left_stick_x;
+        double rx = robot.gamepad1.right_stick_x;
+        double fl, bl, fr, br;
+        double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
 
-        turnSpeed = robot.gamepad1.right_stick_x / 4;
+        ToggleButtonReader buttonReader = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.START);
 
-        driveIndex = 1;
+        if (buttonReader.stateJustChanged()) {
+            if (driveIndex++ > driveControls.length) {
+                driveIndex = 0;
+            }
+            else {
+                driveIndex++;
+            }
+        }
 
         driveType = driveControls[driveIndex];
-        if (robot.gamepad1.y) {
 
+        switch (driveType) {
+            case ARCADE:
+                x = robot.gamepad1.left_stick_x * 1.1;
+                fl = (y + x + rx) / denom;
+                bl = (y - x + rx) / denom;
+                fr = (y - x - rx) / denom;
+                br = (y + x - rx) / denom;
+                break;
+
+            case TANK:
+                fl = (y + x);
+                bl = (y + x);
+                fr = (y - x);
+                br = (y - x);
+                break;
+
+            default:
+                fl = 0;
+                bl = 0;
+                fr = 0;
+                br = 0;
         }
-        if (robot.gamepad1.a) {
 
+        drive(fl, bl, fr, br);
+        if (telemetryEnabled) {
+            robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());
+            robot.telemetry.addLine("Drive - Dat - Motors")
+                    .addData("frontLeft", fl)
+                    .addData("backLeft", bl)
+                    .addData("frontRight", fr)
+                    .addData("backRight", br);
+            robot.telemetry.addLine("Drive - Dat - Inputs")
+                    .addData("LeftY", -robot.gamepad1.left_stick_y)
+                    .addData("RightY", -robot.gamepad1.right_stick_y)
+                    .addData("LeftX", robot.gamepad1.left_stick_x)
+                    .addData("RightX", robot.gamepad1.right_stick_x);
+            robot.telemetry.addLine("Drive - Dat - InputData")
+                    .addData("X", x)
+                    .addData("Y", y)
+                    .addData("RX", rx)
+                    .addData("Denom", denom);
         }
-        mecanumDrive.setWeightedDrivePower(new Pose2d(
-                robot.gamepad1.left_stick_y,
-                -robot.gamepad1.left_stick_x,
-                -robot.gamepad1.right_stick_x
-        ));
-
-        robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());
-        robot.telemetry.addData("Drive - Dat - Drive Speed", driveSpeed);
-        robot.telemetry.addData("Drive - Dat - Turn Speed", turnSpeed);
-        robot.telemetry.addData("Drive - Dat - GamepadX", robot.gamepad1.left_stick_x);
     }
 
     public void strafe(double power)
@@ -141,4 +180,18 @@ public class Drive extends SubSystem {
         backRight.setPower(0);
 
     }
+
+    public void drive(double power) {
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backRight.setPower(power);
+        backLeft.setPower(power);
+    }
+
+    public void drive(double fl, double bl, double fr, double br) {
+        frontLeft.setPower(fl);
+        frontRight.setPower(fr);
+        backLeft.setPower(bl);
+        backRight.setPower(br);
+    };
 }
