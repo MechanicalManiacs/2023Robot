@@ -24,10 +24,14 @@ public class MotorEncoderAuto extends FishloAutonomousProgram {
 
     }
 // strafe right is positive power, strafe left is negative power!
+//measurements subject to change
     @Override
     public void main() {
-
-        // 1. Lift arm to position
+        // 1. Drive towards Shipping Hub
+        drive.diagonal(10, Drive.Direction.FRONT_RIGHT, 0.5);
+        // 2. Move CLoser to shipping Hub
+        drive.drive(1,0.2);
+        // 3. Lift arm to position and place block
         switch(position) {
             case LEFT:
                 intake.armToLevel(0);
@@ -39,20 +43,14 @@ public class MotorEncoderAuto extends FishloAutonomousProgram {
                 intake.armToLevel(2);
                 break;
         }
-
-        // 2. Drive towards Shipping Hub
-        drive.diagonal(10, Drive.Direction.FRONT_RIGHT, 0.5);
-        // 3. Move CLoser to shipping Hub
-        drive.drive(1,0.2);
-        // 4. Place Block
-        intake.intake(2);
-        // 5. Move diagonally backwards to wall
+        intake.intake(Intake.IntakeState.REVERSE);
+        // 4. Move diagonally backwards to wall
         drive.diagonal(10, Drive.Direction.BACK_LEFT, 0.5);
-        // 6. Strafe left to carousel
+        // 5. Strafe left to carousel
         drive.strafe(-20,0.5);
-        // 7. Spin Carousel Wheel
-        intake.Duck(0.5, 10);
-        // 8. Move Forward into Storage Unit
+        // 6. Spin Carousel Wheel
+        intake.spinCarousel(0.5, 10);
+        // 7. Move Forward into Storage Unit
         drive.drive(5,0.5);
     }
 }

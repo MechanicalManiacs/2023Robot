@@ -12,6 +12,8 @@ public class Intake extends SubSystem {
     DcMotor intake;
     DcMotor duck;
 
+    ElapsedTime timer = new ElapsedTime();
+
     /**
      * Construct a subsystem with the robot it applies to.
      *
@@ -32,6 +34,12 @@ public class Intake extends SubSystem {
     @Override
     public void handle() {
         arm.setPower(robot.gamepad2.right_stick_y);
+    }
+
+    public enum IntakeState {
+        ON,
+        OFF,
+        REVERSE
     }
 
     public void armToLevel(int level) {
@@ -59,21 +67,19 @@ public class Intake extends SubSystem {
         arm.setPower(0);
     }
 
-    public void intake(int onoff) {
-        if (onoff == 0) {
+    public void intake(IntakeState state) {
+        if (state == IntakeState.OFF) {
             intake.setPower(0);
         }
-        else if (onoff == 1) {
+        else if (state == IntakeState.ON) {
             intake.setPower(1);
         }
-        else if (onoff == 2) {
+        else if (state == IntakeState.REVERSE) {
             intake.setPower(-0.5);
         }
     }
 
-    ElapsedTime timer = new ElapsedTime();
-
-    public void Duck(double power, double time){
+    public void spinCarousel(double power, double time){
         timer.reset();
         duck.setPower(power);
         if (timer.milliseconds() == time) {
