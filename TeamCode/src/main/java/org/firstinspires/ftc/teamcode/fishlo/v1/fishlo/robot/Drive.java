@@ -1,18 +1,13 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.arcrobotics.ftclib.drivebase.HDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.opmode.AutomaticFeedforwardTuner;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
 
@@ -24,8 +19,6 @@ public class Drive extends SubSystem {
     DcMotor backRight;
 
     SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
-
-    GamepadEx gamepad1Ex = new GamepadEx(robot.gamepad1);
 
     private enum DriveControls {
         TANK,
@@ -52,8 +45,6 @@ public class Drive extends SubSystem {
         frontRight = robot.hardwareMap.dcMotor.get("frontRight");
         backLeft = robot.hardwareMap.dcMotor.get("backLeft");
         backRight = robot.hardwareMap.dcMotor.get("backRight");
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     @Override
@@ -63,17 +54,6 @@ public class Drive extends SubSystem {
         double rx = robot.gamepad1.right_stick_x;
         double fl, bl, fr, br;
         double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-
-        ToggleButtonReader buttonReader = new ToggleButtonReader(gamepad1Ex, GamepadKeys.Button.START);
-
-        if (buttonReader.stateJustChanged()) {
-            if (driveIndex++ > driveControls.length) {
-                driveIndex = 0;
-            }
-            else {
-                driveIndex++;
-            }
-        }
 
         driveType = driveControls[driveIndex];
 

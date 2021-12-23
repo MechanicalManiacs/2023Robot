@@ -13,138 +13,103 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 
 public class Vision extends SubSystem {
 
-    private OpenCvCamera camera;
-    private boolean isUsingWebcam = true;
-    private String cameraName = "webcam";
+    private OpenCvCamera webcam;
     private VisionPipeline pipeline;
 
-    private int WIDTH = 432;
-    private int HEIGHT = 240;
-    private double thresholdRight = 2 * WIDTH / 3.0;
-    private double thresholdLeft = WIDTH / 3.0;
+    private double crThreshHigh = 150;
+    private double crThreshLow = 120;
+    private double cbThreshHigh = 255;
+    private double cbThreshLow = 255;
 
-    public enum DetectorState {
-        NOT_CONFIGURED,
-        INITIALIZING,
-        RUNNING,
-        INIT_FAILURE_NOT_RUNNING;
-    }
+    private int minRectangleArea = 2000;
+    private double leftBarcodeRangeBoundary = 0.32; //i.e 30% of the way across the frame from the left
+    private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
-    private DetectorState detectorState = DetectorState.NOT_CONFIGURED;
+    // Pink Range                                      Y      Cr     Cb
+    public static Scalar scalarLowerYCrCb = new Scalar(  0.0, 150.0, 120.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 255.0);
 
-    private final Object sync = new Object();
-
-    public enum position {
-        LEFT,
-        RIGHT,
-        CENTER,
-        NULL
-    }
-
+    /**
+     * Construct a subsystem with the robot it applies to.
+     *
+     * @param robot
+     */
     public Vision(Robot robot) {
         super(robot);
     }
 
     @Override
     public void init() {
-        synchronized (sync) {
-            if (detectorState == DetectorState.NOT_CONFIGURED) {
-                //This will instantiate an OpenCvCamera object for the camera we'll be using
-                int cameraMonitorViewId = robot.hardwareMap
-                        .appContext.getResources()
-                        .getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
-                if (isUsingWebcam) {
-                    camera = OpenCvCameraFactory.getInstance()
-                            .createWebcam(robot.hardwareMap.get(WebcamName.class, cameraName), cameraMonitorViewId);
-                } else {
-                    camera = OpenCvCameraFactory.getInstance()
-                            .createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-                }
+        // OpenCV webcam
+        int cameraMonitorViewId = robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
+        //OpenCV Pipeline
 
-                //Set the pipeline the camera should use and start streaming
-                camera.setPipeline(pipeline = new VisionPipeline());
+        pipeline = new VisionPipeline(0.005, 0.005, 0.005, 0.005);
 
+        pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
+        pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
 
-                detectorState = DetectorState.INITIALIZING;
+        webcam.setPipeline(pipeline);
 
-                camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                    @Override
-                    public void onOpened() {
+        // Webcam Streaming
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+            }
 
-                        camera.startStreaming(WIDTH, HEIGHT, OpenCvCameraRotation.UPRIGHT);
+            @Override
+            public void onError(int errorCode) {
 
-                        synchronized (sync) {
-                            detectorState = DetectorState.RUNNING;
-                        }
-                    }
+            }
+        });
+    }
 
-                    public void onError(int errorCode) {
+    public String getPlacement() {
+        String placement = "";
+        if(pipeline.error){
+            robot.telemetry.addData("Exception: ", pipeline.debug.getStackTrace());
+        }
+        // Only use this line of the code when you want to find the lower and upper values, using Ftc Dashboard (https://acmerobotics.github.io/ftc-dashboard/gettingstarted)
+        // testing(pipeline);
 
-                        synchronized (sync) {
-                            detectorState = DetectorState.INIT_FAILURE_NOT_RUNNING; //Set our state
-                        }
+        // Watch our YouTube Tutorial for the better explanation
 
-                        RobotLog.addGlobalWarningMessage("Warning: Camera device failed to open with EasyOpenCv error: " +
-                                ((errorCode == -1) ? "CAMERA_OPEN_ERROR_FAILURE_TO_OPEN_CAMERA_DEVICE" : "CAMERA_OPEN_ERROR_POSTMORTEM_OPMODE")
-                        ); //Warn the user about the issue
-                    }
-                });
+        double rectangleArea = pipeline.getRectArea();
+
+        //Print out the area of the rectangle that is found.
+        robot.telemetry.addData("Rectangle Area", rectangleArea);
+        robot.telemetry.addData("Midpoint", pipeline.getRectMidpointX());
+
+        //Check to see if the rectangle has a large enough area to be a marker.
+        if(rectangleArea > minRectangleArea){
+            //Then check the location of the rectangle to see which barcode it is in.
+            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 400){
+                robot.telemetry.addData("Barcode Position", "Right");
+                placement = "Right";
+            }
+            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 150){
+                robot.telemetry.addData("Barcode Position", "Left");
+                placement = "Left";
+            }
+            else {
+                robot.telemetry.addData("Barcode Position", "Center");
+                placement = "Center";
             }
         }
+
+        robot.telemetry.update();
+        return placement;
     }
 
     @Override
-    public void handle() {}
+    public void handle() {
+
+    }
 
     @Override
     public void stop() {
-        camera.stopStreaming();
-    }
 
-    public OpenCvCamera getCamera() {
-        return camera;
     }
-
-    public void setLowerBound(Scalar low) {
-        pipeline.setLowerBound(low);
-    }
-
-    public void setUpperBound(Scalar high) {
-        pipeline.setUpperBound(high);
-    }
-
-    public void setLowerAndUpperBounds(Scalar low, Scalar high) {
-        pipeline.setLowerAndUpperBounds(low, high);
-    }
-
-    // The area below thresholdLeft will be the Left placement, to the right of
-    // thresholdRight will be Right placement, and the area between those is the center
-    // 0.0 to 1.0
-    public void setPercentThreshold(double percentLeft, double percentRight) {
-        thresholdLeft = WIDTH * percentLeft;
-        thresholdRight = WIDTH * percentRight;
-    }
-
-    // 0.0 to WIDTH
-    public void setThreshold(double pixelsLeft, double pixelsRight) {
-        thresholdLeft = pixelsLeft;
-        thresholdLeft = pixelsRight;
-    }
-
-    public enum Placement {
-        LEFT,
-        RIGHT,
-        CENTER
-    }
-    
-    public Placement getPlacement() {
-        if (pipeline.getCentroid() != null) {
-            if (pipeline.getCentroid().x > thresholdRight)
-                return Placement.RIGHT;
-            else if (pipeline.getCentroid().x < thresholdLeft)
-                return Placement.LEFT;
-        }
-        return Placement.CENTER;
-    }
-
 }
