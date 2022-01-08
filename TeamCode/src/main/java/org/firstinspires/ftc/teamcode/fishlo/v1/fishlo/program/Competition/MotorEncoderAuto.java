@@ -27,6 +27,7 @@ public class MotorEncoderAuto extends FishloAutonomousProgram {
     }
 // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
+    //Re-push cuz rahul is bad
     @Override
     public void main() {
         // 1. Drive towards Shipping Hub
