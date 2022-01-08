@@ -26,8 +26,8 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(  0.0, 150.0, 120.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 255.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(  144.0, 65.0, 186.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(155.0, 75.0, 196.0);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -79,7 +79,6 @@ public class Vision extends SubSystem {
         double rectangleArea = pipeline.getRectArea();
 
         //Print out the area of the rectangle that is found.
-        robot.telemetry.addData("Rectangle Area", rectangleArea);
         robot.telemetry.addData("Midpoint", pipeline.getRectMidpointX());
 
         //Check to see if the rectangle has a large enough area to be a marker.

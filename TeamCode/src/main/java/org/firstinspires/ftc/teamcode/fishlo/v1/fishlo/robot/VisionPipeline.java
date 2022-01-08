@@ -17,11 +17,11 @@ import java.util.List;
 // Credits to team 7303 RoboAvatars, adjusted by team 3954 Pink to the Future
 
 public class VisionPipeline extends OpenCvPipeline {
-    Scalar HOT_PINK = new Scalar(196, 23, 112);
+    Scalar ORANGE = new Scalar(255, 145, 0);
 
     // Pink, the default color                         Y      Cr     Cb    (Do not change Y)
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 150.0, 120.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 255.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(144.0, 65.0, 186.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(155.0, 75.0, 196.0);
 
     // Green                                             Y      Cr     Cb
     // public static Scalar scalarLowerYCrCb = new Scalar(  0.0, 0.0, 0.0);
@@ -142,7 +142,7 @@ public class VisionPipeline extends OpenCvPipeline {
                     (int) (borderTopY * CAMERA_HEIGHT),
                     (int) (CAMERA_WIDTH - (borderRightX * CAMERA_WIDTH) - (borderLeftX * CAMERA_HEIGHT)),
                     (int) (CAMERA_HEIGHT - (borderBottomY * CAMERA_WIDTH) - (borderTopY * CAMERA_HEIGHT))
-            ), HOT_PINK, 2);
+            ), ORANGE, 2);
 
             // Display Data
             Imgproc.putText(input, "Area: " + getRectArea() + " Midpoint: " + getRectMidpointXY().x + " , " + getRectMidpointXY().y, new Point(5, CAMERA_HEIGHT - 5), 0, 0.6, new Scalar(255, 255, 255), 2);

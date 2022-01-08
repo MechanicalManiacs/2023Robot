@@ -1,10 +1,22 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.arcrobotics.ftclib.command.button.Button;
+import com.arcrobotics.ftclib.command.button.Trigger;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
+import com.arcrobotics.ftclib.gamepad.TriggerReader;
+import com.arcrobotics.ftclib.hardware.ServoEx;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
+
+import java.time.OffsetDateTime;
 
 public class Intake extends SubSystem {
 
@@ -12,7 +24,21 @@ public class Intake extends SubSystem {
     DcMotor intake;
     DcMotor duck;
 
+    CRServo capstoneClaw;
+
     ElapsedTime timer = new ElapsedTime();
+    ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+
+    double[] position = {0, 0.5};
+    int positionIndex = 0;
+
+    int cpr = 28;
+    double gearRatio = 19.2;
+    double diameter = DriveConstants.WHEEL_RADIUS * 2;
+    double cpi = (cpr * gearRatio)/(Math.PI * diameter);
+    double bias = 0.8;
+    double meccyBias = 0.9;
+    double conversion = cpi * bias;
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -29,11 +55,30 @@ public class Intake extends SubSystem {
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
     }
 
     @Override
     public void handle() {
-        arm.setPower(robot.gamepad2.right_stick_y);
+        arm.setPower(robot.gamepad2.right_stick_y/2);
+      double increment = 0.1;
+        if (robot.gamepad2.right_bumper) {
+            duck.setPower(- n0.8);
+        }
+        duck.setPower(robot.gamepad2.right_stick_x);
+
+
+        if (robot.gamepad2.right_trigger >= 0.5) {
+            intake(IntakeState.ON);
+        }
+        else if (robot.gamepad2.left_trigger >= 0.5) {
+            intake(IntakeState.REVERSE);
+        }
+        else {
+            intake(IntakeState.OFF);
+        }
+
+        capstoneClaw.setPower(robot.gamepad2.left_stick_y/2);
     }
 
     public enum IntakeState {
@@ -75,7 +120,7 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-0.5);
+            intake.setPower(-0.75);
         }
     }
 

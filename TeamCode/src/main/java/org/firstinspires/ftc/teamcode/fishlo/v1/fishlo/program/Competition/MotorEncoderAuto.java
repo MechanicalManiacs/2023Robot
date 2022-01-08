@@ -19,17 +19,20 @@ public class MotorEncoderAuto extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
-        position = vision.getPlacement();
-
+        telemetry.setAutoClear(true);
+        while (!isStarted()) {
+            position = vision.getPlacement();
+            telemetry.addData("Position", position);
+        }
     }
 // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     @Override
     public void main() {
         // 1. Drive towards Shipping Hub
-        drive.diagonal(10, Drive.Direction.FRONT_RIGHT, 0.5);
+        drive.strafe(25, 0.8);
         // 2. Move CLoser to shipping Hub
-        drive.drive(1,0.2);
+        drive.drive(17, 0.6);
         // 3. Lift arm to position and place block
         switch(position) {
             case "Left":
