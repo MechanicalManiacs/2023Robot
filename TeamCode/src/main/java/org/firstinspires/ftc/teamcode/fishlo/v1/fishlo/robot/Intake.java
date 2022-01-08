@@ -63,7 +63,7 @@ public class Intake extends SubSystem {
         arm.setPower(robot.gamepad2.right_stick_y/2);
       double increment = 0.1;
         if (robot.gamepad2.right_bumper) {
-            duck.setPower(- n0.8);
+            duck.setPower(-0.8);
         }
         duck.setPower(robot.gamepad2.right_stick_x);
 
