@@ -24,7 +24,7 @@ public class Intake extends SubSystem {
     DcMotor intake;
     DcMotor duck;
 
-    CRServo capstoneClaw;
+    Servo capstoneClaw;
 
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
@@ -55,18 +55,26 @@ public class Intake extends SubSystem {
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+        capstoneClaw = robot.hardwareMap.servo.get("capstoneClaw");
     }
 
     @Override
     public void handle() {
-        arm.setPower(robot.gamepad2.right_stick_y/2);
-      double increment = 0.1;
+        arm.setPower(-robot.gamepad2.right_stick_y);
+        double increment = 0.1;
         if (robot.gamepad2.right_bumper) {
             duck.setPower(-0.8);
         }
+        if (robot.gamepad2.a) {
+            capstoneClaw.setPosition(0.5);
+        }
+        else if (robot.gamepad2.b) {
+            capstoneClaw.setPosition(0);
+        }
+        else if (robot.gamepad2.y) {
+            capstoneClaw.setPosition(1);
+        }
         duck.setPower(robot.gamepad2.right_stick_x);
-
 
         if (robot.gamepad2.right_trigger >= 0.5) {
             intake(IntakeState.ON);
@@ -77,8 +85,6 @@ public class Intake extends SubSystem {
         else {
             intake(IntakeState.OFF);
         }
-
-        capstoneClaw.setPower(robot.gamepad2.left_stick_y/2);
     }
 
     public enum IntakeState {
@@ -88,27 +94,24 @@ public class Intake extends SubSystem {
     }
 
     public void armToLevel(int level) {
+        double ticksPerRevHalf = 537.7/2;  //537.7
         double ticksPerRev = 537.7;
+        int target = 0;
         if (level == 0) {
-            int target = (int) (ticksPerRev * (0.4));
-            arm.setTargetPosition(target);
+            target = arm.getCurrentPosition() + (int)(ticksPerRevHalf/3);
         }
         else if (level == 1) {
-            int target = (int) (ticksPerRev * (0.8));
-            arm.setTargetPosition(target);
+            target = arm.getCurrentPosition() + (int)(ticksPerRevHalf/2);
         }
         else if (level == 2) {
-            int target = (int) (ticksPerRev * (1.2));
-            arm.setTargetPosition(target);
+            target = arm.getCurrentPosition() + (int)(ticksPerRev/3);
         }
-
-        arm.setPower(0.5);
+        arm.setTargetPosition(target);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+        arm.setPower(0.5);
         while (arm.isBusy()) {
-            //none
+            // do nohing
         }
-
         arm.setPower(0);
     }
 
@@ -120,7 +123,7 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-0.75);
+            intake.setPower(-0.5);
         }
     }
 

@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -19,7 +21,16 @@ public class Drive extends SubSystem {
     DcMotor backLeft;
     DcMotor backRight;
 
+    Motor fl;
+    Motor fr;
+    Motor bl;
+    Motor br;
+
     SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
+
+    DcMotor[] motors = {frontLeft, frontRight, backLeft, backRight};
+
+    MecanumDrive drive;
 
     private enum DriveControls {
         TANK,
@@ -27,7 +38,7 @@ public class Drive extends SubSystem {
         NONE
     }
 
-    DriveControls[] driveControls = {DriveControls.NONE, DriveControls.TANK, DriveControls.ARCADE};
+    DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
     DriveControls driveType;
     int driveIndex = 0;
     boolean telemetryEnabled;
@@ -36,9 +47,12 @@ public class Drive extends SubSystem {
     double gearRatio = 19.2;
     double diameter = DriveConstants.WHEEL_RADIUS * 2;
     double cpi = (cpr * gearRatio)/(Math.PI * diameter);
-    double bias = 0.8;
+    double bias = 1.5;
     double meccyBias = 0.9;
-    double conversion = cpi * bias;
+    double conversion = cpi;
+    int coeff = 1;
+
+    boolean exit = false;
     /**
      * Construct a subsystem with the robot it applies to.
      *
@@ -55,67 +69,72 @@ public class Drive extends SubSystem {
         frontRight = robot.hardwareMap.dcMotor.get("frontRight");
         backLeft = robot.hardwareMap.dcMotor.get("backLeft");
         backRight = robot.hardwareMap.dcMotor.get("backRight");
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        drive = new MecanumDrive(fl, fr, bl, br);
+
     }
 
     @Override
     public void handle() {
-        double y = -robot.gamepad1.left_stick_y;
-        double x = robot.gamepad1.left_stick_x;
-        double rx = robot.gamepad1.right_stick_x;
         double fl = 0, bl = 0, fr = 0, br = 0;
-        double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-
         driveType = driveControls[driveIndex];
 
         if (robot.gamepad1.dpad_up) {
             driveIndex++;
-            if (driveIndex > 2) {
-                driveIndex = 1;
+            if (driveIndex > 1) {
+                driveIndex = 0;
             }
         }
 
         switch (driveType) {
             case ARCADE:
-                mecanumDrive.setWeightedDrivePower(
-                        new Pose2d(
-                            robot.gamepad1.left_stick_y,
-                            robot.gamepad1.left_stick_x,
-                            robot.gamepad1.right_stick_x
-                ));
+                double y = robot.gamepad1.left_stick_y; // Remember, this is reversed!
+                double x = -robot.gamepad1.left_stick_x; // Counteract imperfect strafing
+                double rx = -robot.gamepad1.right_stick_x;
+
+                // Denominator is the largest motor power (absolute value) or 1
+                // This ensures all the powers maintain the same ratio, but only when
+                // at least one is out of the range [-1, 1]
+                double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+                double frontLeftPower = (y + x + rx) / denominator;
+                double backLeftPower = (y - x + rx) / denominator;
+                double frontRightPower = (y - x - rx) / denominator;
+                double backRightPower = (y + x - rx) / denominator;
+
+                fl = frontLeftPower;
+                bl = backLeftPower;
+                fr = frontRightPower;
+                br = backRightPower;
+
                 break;
 
             case TANK:
-                fl = robot.gamepad1.left_stick_y;
-                fr = robot.gamepad1.right_stick_y;
-                bl = robot.gamepad1.left_stick_y;
-                br = robot.gamepad1.right_stick_y;
+                fl = robot.gamepad1.left_stick_y / coeff;
+                fr = robot.gamepad1.right_stick_y / coeff;
+                bl = robot.gamepad1.left_stick_y / coeff;
+                br = robot.gamepad1.right_stick_y / coeff;
                 if (robot.gamepad1.right_bumper) {
-                    fl = -0.75;
-                    fr = 0.75;
-                    bl = 0.75;
-                    br = -0.75;
+                    fl = -1 / coeff;
+                    fr = 1 / coeff;
+                    bl = 1 / coeff;
+                    br = -1 / coeff;
                 }
                 if (robot.gamepad1.left_bumper) {
-                    fl = 0.75;
-                    fr = -0.75;
-                    bl = -0.75;
-                    br = 0.75;
+                    fl = 1 / coeff;
+                    fr = -1 / coeff;
+                    bl = -1 / coeff;
+                    br = 1  / coeff;
                 }
-                break;
-            case NONE:
-                fl = 0;
-                br = 0;
-                bl = 0;
-                fr = 0;
-                break;
-
-            default:
-                fl = 0;
-                bl = 0;
-                fr = 0;
-                br = 0;
+                if (robot.gamepad1.right_trigger >= 0.5) {
+                    coeff = 2;
+                }
+                if  (robot.gamepad1.left_trigger >= 0.5) {
+                    coeff = 1;
+                }
                 break;
         }
 
@@ -132,58 +151,13 @@ public class Drive extends SubSystem {
                     .addData("RightY", -robot.gamepad1.right_stick_y)
                     .addData("LeftX", robot.gamepad1.left_stick_x)
                     .addData("RightX", robot.gamepad1.right_stick_x);
-            robot.telemetry.addLine("Drive - Dat - InputData")
-                    .addData("X", x)
-                    .addData("Y", y)
-                    .addData("RX", rx)
-                    .addData("Denom", denom);
         }
     }
 
     public void strafe(double inches, double power)
     {
-//        double diameter = DriveConstants.WHEEL_RADIUS * 2;
-//        double ticksPerRev = frontLeft.getMotorType().getTicksPerRev();
-//
-//        //Rest Encoders.
-//        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//
-//        //Calculate tick value that the motors need to turn.
-//        double circumference = 3.14*diameter;
-//        double rotationsNeeded = inches/circumference;
-//        int encoderDrivingTarget = (int)(rotationsNeeded*ticksPerRev);
-//
-//        //Set tick value to the motors' target position.
-//        frontLeft.setTargetPosition(encoderDrivingTarget);
-//        frontRight.setTargetPosition(encoderDrivingTarget);
-//        backLeft.setTargetPosition(encoderDrivingTarget);
-//        backRight.setTargetPosition(encoderDrivingTarget);
-//
-//        //Set the desired power
-//        frontLeft.setPower(power);
-//        frontRight.setPower(-power);
-//        backLeft.setPower(-power);
-//        backRight.setPower(power);
-//
-//        //Set the mode of the motors to run to the target position.
-//        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//        while(frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy() )
-//        {
-//            //Do nothing until motors catch up.
-//        }
-//
-//        frontLeft.setPower(0);
-//        frontRight.setPower(0);
-//        backLeft.setPower(0);
-//        backRight.setPower(0);
-        int move = (int)(Math.round(inches * cpi * meccyBias));
+        //
+        int move = -(int)(Math.round(inches * cpi));
         //
         backLeft.setTargetPosition(backLeft.getCurrentPosition() - move);
         frontLeft.setTargetPosition(frontLeft.getCurrentPosition() + move);
@@ -200,12 +174,10 @@ public class Drive extends SubSystem {
         frontRight.setPower(power);
         backRight.setPower(power);
         //
-        while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()){}
-        frontRight.setPower(0);
-        frontLeft.setPower(0);
-        backRight.setPower(0);
-        backLeft.setPower(0);
-        return;
+        while(frontRight.isBusy() && frontLeft.isBusy() && backRight.isBusy() && backLeft.isBusy()) {
+            //ur mom
+        }
+        stop();
     }
 
 
@@ -225,48 +197,8 @@ public class Drive extends SubSystem {
 
     public void drive(double inches, double power)
     {
-//        double diameter = DriveConstants.WHEEL_RADIUS * 2;
-//        double ticksPerRev = frontLeft.getMotorType().getTicksPerRev();
-//
-//        //Rest Encoders.
-//        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//
-//        //Calculate tick value that the motors need to turn.
-//        double circumference = 3.14*diameter;
-//        double rotationsNeeded = inches/circumference;
-//        int encoderDrivingTarget = (int)(rotationsNeeded*ticksPerRev);
-//
-//        //Set tick value to the motors' target position.
-//        frontLeft.setTargetPosition(encoderDrivingTarget);
-//        frontRight.setTargetPosition(encoderDrivingTarget);
-//        backLeft.setTargetPosition(encoderDrivingTarget);
-//        backRight.setTargetPosition(encoderDrivingTarget);
-//
-//        //Set the desired power
-//        frontLeft.setPower(power);
-//        frontRight.setPower(power);
-//        backLeft.setPower(power);
-//        backRight.setPower(power);
-//
-//        //Set the mode of the motors to run to the target position.
-//        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//        while(frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy() )
-//        {
-//            //Do nothing until motors catch up.
-//        }
-//
-//        frontLeft.setPower(0);
-//        frontRight.setPower(0);
-//        backLeft.setPower(0);
-//        backRight.setPower(0);
-        int move = (int)(Math.round(inches*conversion));
+        //
+        int move = -(int)(Math.round(inches*conversion));
         //
         backLeft.setTargetPosition(backLeft.getCurrentPosition() + move);
         frontLeft.setTargetPosition(frontLeft.getCurrentPosition() + move);
@@ -283,13 +215,10 @@ public class Drive extends SubSystem {
         frontRight.setPower(power);
         backRight.setPower(power);
         //
-        while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()){
-            //Do nothing
+        while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
+            //ur mom
         }
-        frontRight.setPower(0);
-        frontLeft.setPower(0);
-        backRight.setPower(0);
-        backLeft.setPower(0);
+        stop();
         return;
     }
 
@@ -300,67 +229,17 @@ public class Drive extends SubSystem {
         FRONT_LEFT
     }
 
-    public void diagonal(double inches, Direction direction, double power)
-    {
-        double diameter = DriveConstants.WHEEL_RADIUS;
-        double ticksPerRev = frontLeft.getMotorType().getTicksPerRev();
-
-        //Rest Encoders.
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        //Calculate tick value that the motors need to turn.
-        double circumference = 3.14*diameter;
-        double rotationsNeeded = inches/circumference;
-        int encoderDrivingTarget = (int)(rotationsNeeded*ticksPerRev);
-
-        //Set tick value to the motors' target position.
-        frontLeft.setTargetPosition(encoderDrivingTarget);
-        frontRight.setTargetPosition(encoderDrivingTarget);
-        backLeft.setTargetPosition(encoderDrivingTarget);
-        backRight.setTargetPosition(encoderDrivingTarget);
-
-        //Set the desired power
-        switch (direction) {
-            case BACK_LEFT:
-                frontLeft.setPower(-power);
-                backRight.setPower(-power);
-                break;
-            case BACK_RIGHT:
-                backLeft.setPower(-power);
-                frontRight.setPower(-power);
-                break;
-            case FRONT_LEFT:
-                backLeft.setPower(power);
-                frontRight.setPower(power);
-                break;
-            case FRONT_RIGHT:
-                frontLeft.setPower(power);
-                backRight.setPower(power);
-        }
-
-        //Set the mode of the motors to run to the target position.
-        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        while(frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy() )
-        {
-            //Do nothing until motors catch up.
-        }
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
-    }
-
     public void drive(double fl, double bl, double fr, double br) {
         frontLeft.setPower(fl);
         frontRight.setPower(fr);
         backLeft.setPower(bl);
         backRight.setPower(br);
-    };
+    }
+
+    public void resetEncoders() {
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
 }

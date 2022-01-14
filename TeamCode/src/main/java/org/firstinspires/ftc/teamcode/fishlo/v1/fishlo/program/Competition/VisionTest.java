@@ -18,6 +18,7 @@ public class VisionTest extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        telemetry.addLine("start");
         telemetry.setAutoClear(true);
         while (!isStarted()) {
             placement = vision.getPlacement();
