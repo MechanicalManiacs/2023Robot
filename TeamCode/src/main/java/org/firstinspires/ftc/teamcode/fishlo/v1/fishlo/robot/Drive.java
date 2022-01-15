@@ -26,6 +26,8 @@ public class Drive extends SubSystem {
     Motor bl;
     Motor br;
 
+    DcMotor arm;
+
     SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
 
     DcMotor[] motors = {frontLeft, frontRight, backLeft, backRight};
@@ -73,6 +75,7 @@ public class Drive extends SubSystem {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm = robot.hardwareMap.dcMotor.get("arm");
 
         drive = new MecanumDrive(fl, fr, bl, br);
 
@@ -80,6 +83,7 @@ public class Drive extends SubSystem {
 
     @Override
     public void handle() {
+
         double fl = 0, bl = 0, fr = 0, br = 0;
         driveType = driveControls[driveIndex];
 
@@ -151,11 +155,13 @@ public class Drive extends SubSystem {
                     .addData("RightY", -robot.gamepad1.right_stick_y)
                     .addData("LeftX", robot.gamepad1.left_stick_x)
                     .addData("RightX", robot.gamepad1.right_stick_x);
+            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
         }
     }
 
     public void strafe(double inches, double power)
     {
+        resetEncoders();
         //
         int move = -(int)(Math.round(inches * cpi));
         //
@@ -169,12 +175,10 @@ public class Drive extends SubSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //
-        frontLeft.setPower(power);
-        backLeft.setPower(power);
-        frontRight.setPower(power);
-        backRight.setPower(power);
+        left(power);
+        right(power);
         //
-        while(frontRight.isBusy() && frontLeft.isBusy() && backRight.isBusy() && backLeft.isBusy()) {
+        while(frontRight.isBusy() || frontLeft.isBusy() || backRight.isBusy() || backLeft.isBusy()) {
             //ur mom
         }
         stop();
@@ -184,10 +188,8 @@ public class Drive extends SubSystem {
     @Override
     public void stop()
     {
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backRight.setPower(0);
-        backLeft.setPower(0);
+        left(0);
+        right(0);
     }
 
     public void turn(double angle)
@@ -195,8 +197,21 @@ public class Drive extends SubSystem {
         mecanumDrive.turn(Math.toRadians(angle));
     }
 
+    private void left(double power){
+        try {
+            frontLeft.setPower(power);
+            backLeft.setPower(power);
+        } catch(Exception ex){}
+    }
+    private void right(double power){
+        try {
+            frontRight.setPower(power);
+            backRight.setPower(power);
+        }catch(Exception ex){}
+    }
     public void drive(double inches, double power)
     {
+        resetEncoders();
         //
         int move = -(int)(Math.round(inches*conversion));
         //
@@ -210,17 +225,17 @@ public class Drive extends SubSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //
-        frontLeft.setPower(power);
-        backLeft.setPower(power);
-        frontRight.setPower(power);
-        backRight.setPower(power);
+        left(power);
+        right(power);
         //
-        while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
-            //ur mom
+        while (frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy()) {
+            if(exit) return;
+            //do nothing
         }
         stop();
         return;
     }
+
 
     public enum Direction {
         BACK_LEFT,

@@ -135,6 +135,10 @@ public class Intake extends SubSystem {
         }
 
     }
+
+    public double getMotorPos() {
+        return arm.getCurrentPosition();
+    }
     @Override
     public void stop() {
 

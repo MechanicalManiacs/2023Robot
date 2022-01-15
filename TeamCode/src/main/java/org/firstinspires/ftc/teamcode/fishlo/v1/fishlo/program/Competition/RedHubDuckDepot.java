@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 public class RedHubDuckDepot extends FishloAutonomousProgram {
 
     String position;
+    ElapsedTime timer;
 
     @Override
     protected Robot buildRobot() {
@@ -18,6 +20,7 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
@@ -35,7 +38,11 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
         vision.stop();
         drive.strafe(27, 0.8);
         sleep(200);
-        drive.drive(-4, 0.4);
+        timer.reset();
+        drive.drive(-0.2, -0.2, -0.2, -0.2);
+        if (timer.seconds() == 1) {
+            drive.stop();
+        }
         sleep(200);
         switch(position) {
             case "Left":
@@ -48,15 +55,15 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
                 intake.armToLevel(2);
                 break;
         }
-        sleep(200);
+       // sleep(200);
         drive.drive(30, 0.5);
-        sleep(100);
+      //  sleep(100);
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(100);
+       // sleep(100);
         drive.drive(-32, 0.6);
-        sleep(100);
+       // sleep(100);
         drive.strafe(-45, 0.8);
-        sleep(100);
+      //  sleep(100);
         drive.drive(10, 0.8);
 
 
