@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 public class RedHubDuckDepot extends FishloAutonomousProgram {
 
     String position;
-    ElapsedTime timer;
 
     @Override
     protected Robot buildRobot() {
@@ -20,11 +19,13 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
-        timer = new ElapsedTime();
         telemetry.setAutoClear(true);
+        intake.clawToInitPos();
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
-            position = vision.getPlacement();
+            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
+                position = vision.getPlacement();
+            }
             telemetry.addData("Position", position);
         }
         telemetry.update();
@@ -34,16 +35,21 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-        telemetry.clear();
         vision.stop();
-        drive.strafe(27, 0.8);
+        telemetry.clear();
+        telemetry.update();
+        telemetry.addLine("1. Strafing");
+        telemetry.update();
+
+        drive.driveleft(10, 0.8);
+
         sleep(200);
-        timer.reset();
-        drive.drive(-0.2, -0.2, -0.2, -0.2);
-        if (timer.seconds() == 1) {
-            drive.stop();
-        }
-        sleep(200);
+
+        telemetry.addLine("2. Squaring up with wall");
+        telemetry.update();
+        telemetry.addLine("3. Move arm to position");
+        telemetry.update();
+
         switch(position) {
             case "Left":
                 intake.armToLevel(0);
@@ -55,16 +61,40 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
                 intake.armToLevel(2);
                 break;
         }
-       // sleep(200);
-        drive.drive(30, 0.5);
-      //  sleep(100);
+
+        sleep(200);
+
+        telemetry.addLine("4. Move up to the shipping hub");
+        telemetry.update();
+
+        drive.drive(18, 0.6);
+
+        sleep(200);
+
+        telemetry.addLine("5. Drop off block");
+        telemetry.update();
+
         intake.intake(Intake.IntakeState.REVERSE);
-       // sleep(100);
-        drive.drive(-32, 0.6);
-       // sleep(100);
-        drive.strafe(-45, 0.8);
-      //  sleep(100);
-        drive.drive(10, 0.8);
+
+        sleep(1000);
+
+        intake.intake(Intake.IntakeState.OFF);
+        intake.armToLevel(3);
+        intake.stop();
+        intake.resetEncoder();
+
+
+
+        sleep(200);
+//        drive.drive(30, 0.5);
+//      //  sleep(100);
+//        intake.intake(Intake.IntakeState.REVERSE);
+//       // sleep(100);
+//        drive.drive(-32, 0.6);
+//       // sleep(100);
+//        drive.strafe(-45, 0.8);
+//      //  sleep(100);
+//        drive.drive(10, 0.8);
 
 
 

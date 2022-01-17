@@ -79,21 +79,17 @@ public class Vision extends SubSystem {
         double rectangleArea = pipeline.getRectArea();
 
         //Print out the area of the rectangle that is found.
-        robot.telemetry.addData("Midpoint", pipeline.getRectMidpointX());
 
         //Check to see if the rectangle has a large enough area to be a marker.
         if(rectangleArea > minRectangleArea){
             //Then check the location of the rectangle to see which barcode it is in.
             if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 400){
-                robot.telemetry.addData("Barcode Position", "Right");
                 placement = "Right";
             }
             else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 150){
-                robot.telemetry.addData("Barcode Position", "Left");
                 placement = "Left";
             }
             else {
-                robot.telemetry.addData("Barcode Position", "Center");
                 placement = "Center";
             }
         }
@@ -109,6 +105,6 @@ public class Vision extends SubSystem {
 
     @Override
     public void stop() {
-        webcam.stopStreaming();
+        webcam.closeCameraDevice();
     }
 }

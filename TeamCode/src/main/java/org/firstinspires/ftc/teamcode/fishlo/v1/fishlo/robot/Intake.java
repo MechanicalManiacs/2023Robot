@@ -60,7 +60,8 @@ public class Intake extends SubSystem {
 
     @Override
     public void handle() {
-        arm.setPower(-robot.gamepad2.right_stick_y);
+        arm.setPower(-robot.gamepad2.right_stick_y/2);
+        arm.setPower(-robot.gamepad2.left_stick_y);
         double increment = 0.1;
         if (robot.gamepad2.right_bumper) {
             duck.setPower(-0.8);
@@ -98,13 +99,16 @@ public class Intake extends SubSystem {
         double ticksPerRev = 537.7;
         int target = 0;
         if (level == 0) {
-            target = arm.getCurrentPosition() + (int)(ticksPerRevHalf/3);
+            target = 300;
         }
         else if (level == 1) {
-            target = arm.getCurrentPosition() + (int)(ticksPerRevHalf/2);
+            target = 475;
         }
         else if (level == 2) {
-            target = arm.getCurrentPosition() + (int)(ticksPerRev/3);
+            target = 600;
+        }
+        else if (level == 3) {
+            target = 0;
         }
         arm.setTargetPosition(target);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -112,7 +116,6 @@ public class Intake extends SubSystem {
         while (arm.isBusy()) {
             // do nohing
         }
-        arm.setPower(0);
     }
 
     public void intake(IntakeState state) {
@@ -139,8 +142,16 @@ public class Intake extends SubSystem {
     public double getMotorPos() {
         return arm.getCurrentPosition();
     }
+
+    public void resetEncoder() {
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
     @Override
     public void stop() {
+        arm.setPower(0);
+    }
 
+    public void clawToInitPos() {
+        capstoneClaw.setPosition(0.1);
     }
 }

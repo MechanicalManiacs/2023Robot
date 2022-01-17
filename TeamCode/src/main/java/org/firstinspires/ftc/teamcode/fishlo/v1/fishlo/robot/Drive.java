@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -16,10 +17,10 @@ import org.firstinspires.ftc.teamcode.robot.SubSystem;
 
 public class Drive extends SubSystem {
 
-    DcMotor frontLeft;
-    DcMotor frontRight;
-    DcMotor backLeft;
-    DcMotor backRight;
+    DcMotorEx frontLeft;
+    DcMotorEx frontRight;
+    DcMotorEx backLeft;
+    DcMotorEx backRight;
 
     Motor fl;
     Motor fr;
@@ -67,10 +68,10 @@ public class Drive extends SubSystem {
 
     @Override
     public void init() {
-        frontLeft = robot.hardwareMap.dcMotor.get("frontLeft");
-        frontRight = robot.hardwareMap.dcMotor.get("frontRight");
-        backLeft = robot.hardwareMap.dcMotor.get("backLeft");
-        backRight = robot.hardwareMap.dcMotor.get("backRight");
+        frontLeft = robot.hardwareMap.get(DcMotorEx.class, "frontLeft");
+        frontRight = robot.hardwareMap.get(DcMotorEx.class, "frontRight");
+        backLeft = robot.hardwareMap.get(DcMotorEx.class, "backLeft");
+        backRight = robot.hardwareMap.get(DcMotorEx.class, "backRight");
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -161,9 +162,9 @@ public class Drive extends SubSystem {
 
     public void strafe(double inches, double power)
     {
-        resetEncoders();
         //
-        int move = -(int)(Math.round(inches * cpi));
+        resetEncoders();
+        int move = -(int)(Math.round(inches*conversion));
         //
         backLeft.setTargetPosition(backLeft.getCurrentPosition() - move);
         frontLeft.setTargetPosition(frontLeft.getCurrentPosition() + move);
@@ -175,11 +176,13 @@ public class Drive extends SubSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //
-        left(power);
-        right(power);
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backRight.setPower(power);
+        backLeft.setPower(power);
         //
-        while(frontRight.isBusy() || frontLeft.isBusy() || backRight.isBusy() || backLeft.isBusy()) {
-            //ur mom
+        while (frontLeft.isBusy()  &&frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
+            if(exit) return;
         }
         stop();
     }
@@ -211,8 +214,8 @@ public class Drive extends SubSystem {
     }
     public void drive(double inches, double power)
     {
-        resetEncoders();
         //
+        resetEncoders();
         int move = -(int)(Math.round(inches*conversion));
         //
         backLeft.setTargetPosition(backLeft.getCurrentPosition() + move);
@@ -225,15 +228,46 @@ public class Drive extends SubSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //
-        left(power);
-        right(power);
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backRight.setPower(power);
+        backLeft.setPower(power);
         //
-        while (frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy()) {
+        robot.telemetry.addLine("enter while loop");
+        robot.telemetry.update();
+        while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
             if(exit) return;
-            //do nothing
         }
         stop();
-        return;
+    }
+
+    public void driveleft(double inches, double power)
+    {
+        //
+        resetEncoders();
+        int move = -(int)(Math.round(inches*conversion));
+        //
+        backLeft.setTargetPosition(backLeft.getCurrentPosition() + move);
+        frontLeft.setTargetPosition(frontLeft.getCurrentPosition() + move);
+       // backRight.setTargetPosition(backRight.getCurrentPosition() + move);
+       // frontRight.setTargetPosition(frontRight.getCurrentPosition() + move);
+        //
+        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //
+        frontLeft.setPower(power);
+       // frontRight.setPower(power);
+      //  backRight.setPower(power);
+        backLeft.setPower(power);
+        //
+        robot.telemetry.addLine("enter while loop");
+        robot.telemetry.update();
+        while (frontLeft.isBusy() && backLeft.isBusy()) {
+            if(exit) return;
+        }
+        stop();
     }
 
 
@@ -256,5 +290,9 @@ public class Drive extends SubSystem {
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    public double getbackrightpower() {
+        return backRight.getPower();
     }
 }
