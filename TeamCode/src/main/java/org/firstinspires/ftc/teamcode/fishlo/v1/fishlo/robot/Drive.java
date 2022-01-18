@@ -143,6 +143,13 @@ public class Drive extends SubSystem {
                 break;
         }
 
+        if (robot.gamepad1.left_trigger >= 0.5) {
+            coeff = 2;
+        }
+        else {
+            coeff = 1;
+        }
+
         drive(fl, bl, fr, br);
         if (telemetryEnabled) {
             robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());

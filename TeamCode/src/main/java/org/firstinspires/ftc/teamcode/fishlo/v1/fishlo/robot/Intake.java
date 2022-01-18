@@ -26,6 +26,8 @@ public class Intake extends SubSystem {
 
     Servo capstoneClaw;
 
+    int coeff = 1;
+
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
 
@@ -60,8 +62,22 @@ public class Intake extends SubSystem {
 
     @Override
     public void handle() {
-        arm.setPower(-robot.gamepad2.right_stick_y/2);
-        arm.setPower(-robot.gamepad2.left_stick_y);
+        arm.setPower(-robot.gamepad2.left_stick_y/coeff);
+        if (robot.gamepad2.dpad_up) {
+            coeff = 2;
+        }
+        if (robot.gamepad2.dpad_down) {
+            coeff = 1;
+        }
+        if (robot.gamepad2.dpad_left) {
+            armToLevel(2);
+        }
+        if (robot.gamepad2.dpad_right) {
+            armToLevel(0);
+        }
+        else {
+            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
         double increment = 0.1;
         if (robot.gamepad2.right_bumper) {
             duck.setPower(-0.8);
@@ -76,6 +92,19 @@ public class Intake extends SubSystem {
             capstoneClaw.setPosition(1);
         }
         duck.setPower(robot.gamepad2.right_stick_x);
+
+        if (robot.gamepad2.x) {
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 0.7) {
+                duck.setPower(-0.4);
+            }
+
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 1.5){
+                duck.setPower(-0.8);
+            }
+            duck.setPower(0);
+        }
 
         if (robot.gamepad2.right_trigger >= 0.5) {
             intake(IntakeState.ON);
@@ -99,13 +128,13 @@ public class Intake extends SubSystem {
         double ticksPerRev = 537.7;
         int target = 0;
         if (level == 0) {
-            target = 300;
+            target = 350;
         }
         else if (level == 1) {
-            target = 475;
+            target = 500;
         }
         else if (level == 2) {
-            target = 600;
+            target = 700;
         }
         else if (level == 3) {
             target = 0;
@@ -130,12 +159,17 @@ public class Intake extends SubSystem {
         }
     }
 
-    public void spinCarousel(double power, double time){
-        timer.reset();
-        duck.setPower(power);
-        if (timer.milliseconds() == time) {
-            duck.setPower(0);
+    public void spinCarousel(){
+        duckTimer.reset();
+        while (duckTimer.seconds() <= 0.7) {
+            duck.setPower(-0.4);
         }
+
+        duckTimer.reset();
+        while (duckTimer.seconds() <= 1.5){
+            duck.setPower(-0.8);
+        }
+        duck.setPower(0);
 
     }
 
