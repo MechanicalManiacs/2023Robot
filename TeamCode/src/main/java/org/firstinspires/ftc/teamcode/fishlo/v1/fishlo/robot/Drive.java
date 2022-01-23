@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -21,6 +22,8 @@ public class Drive extends SubSystem {
     DcMotorEx frontRight;
     DcMotorEx backLeft;
     DcMotorEx backRight;
+
+    ElapsedTime timer;
 
     Motor fl;
     Motor fr;
@@ -77,7 +80,7 @@ public class Drive extends SubSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm = robot.hardwareMap.dcMotor.get("arm");
-
+        timer = new ElapsedTime();
         drive = new MecanumDrive(fl, fr, bl, br);
 
     }
@@ -167,7 +170,7 @@ public class Drive extends SubSystem {
         }
     }
 
-    public void strafe(double inches, double power)
+    public void strafe(double inches, double power, boolean timerOn, double time)
     {
         //
         resetEncoders();
@@ -188,8 +191,8 @@ public class Drive extends SubSystem {
         backRight.setPower(power);
         backLeft.setPower(power);
         //
-        while (frontLeft.isBusy()  &&frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
-            if(exit) return;
+        while (frontLeft.isBusy()  && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
+            if(timerOn && timer.seconds() <= time) return;
         }
         stop();
     }
@@ -207,19 +210,24 @@ public class Drive extends SubSystem {
         mecanumDrive.turn(Math.toRadians(angle));
     }
 
-    private void left(double power){
-        try {
+    public void driveLeftTime(double time, double power) {
+        while (timer.seconds() <= time) {
             frontLeft.setPower(power);
-            backLeft.setPower(power);
-        } catch(Exception ex){}
-    }
-    private void right(double power){
-        try {
             frontRight.setPower(power);
-            backRight.setPower(power);
-        }catch(Exception ex){}
+        }
+        left(0);
     }
-    public void drive(double inches, double power)
+
+
+    public void left(double power){
+        frontLeft.setPower(power);
+        backLeft.setPower(power);
+    }
+    public void right(double power){
+        frontRight.setPower(power);
+        backRight.setPower(power);
+    }
+    public void drive(double inches, double power, boolean timerOn, double time)
     {
         //
         resetEncoders();
@@ -243,12 +251,12 @@ public class Drive extends SubSystem {
         robot.telemetry.addLine("enter while loop");
         robot.telemetry.update();
         while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
-            if(exit) return;
+            if(timerOn && timer.seconds() <= time) return;
         }
         stop();
     }
 
-    public void driveleft(double inches, double power)
+    public void driveleft(double inches, double power, boolean timerOn, double time)
     {
         //
         resetEncoders();
@@ -260,9 +268,9 @@ public class Drive extends SubSystem {
        // frontRight.setTargetPosition(frontRight.getCurrentPosition() + move);
         //
         frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //
         frontLeft.setPower(power);
        // frontRight.setPower(power);
@@ -271,8 +279,38 @@ public class Drive extends SubSystem {
         //
         robot.telemetry.addLine("enter while loop");
         robot.telemetry.update();
+        timer.reset();
         while (frontLeft.isBusy() && backLeft.isBusy()) {
-            if(exit) return;
+            if(timerOn && timer.seconds() >= time) return;
+        }
+        stop();
+    }
+
+    public void driveRight(double inches, double power, boolean timerOn, double time) {
+        //
+        resetEncoders();
+        int move = -(int)(Math.round(inches*conversion));
+        //
+//        backLeft.setTargetPosition(backLeft.getCurrentPosition() + move);
+//        frontLeft.setTargetPosition(frontLeft.getCurrentPosition() + move);
+        backRight.setTargetPosition(backRight.getCurrentPosition() + move);
+        frontRight.setTargetPosition(frontRight.getCurrentPosition() + move);
+        //
+//        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //
+//        frontLeft.setPower(power);
+         frontRight.setPower(power);
+          backRight.setPower(power);
+//        backLeft.setPower(power);
+        //
+        robot.telemetry.addLine("enter while loop");
+        robot.telemetry.update();
+        timer.reset();
+        while (frontRight.isBusy() && backRight.isBusy()) {
+            if(timerOn && timer.seconds() >= time) return;
         }
         stop();
     }

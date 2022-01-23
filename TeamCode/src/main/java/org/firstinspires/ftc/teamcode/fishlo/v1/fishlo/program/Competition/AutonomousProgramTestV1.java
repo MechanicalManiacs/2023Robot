@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.robot.Robot;
-@Autonomous
 public class AutonomousProgramTestV1 extends FishloAutonomousProgram {
 
     //Back right corner is (-72, -72)

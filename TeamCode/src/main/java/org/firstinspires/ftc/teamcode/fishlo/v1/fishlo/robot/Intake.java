@@ -20,9 +20,10 @@ import java.time.OffsetDateTime;
 
 public class Intake extends SubSystem {
 
-    DcMotor arm;
+    public DcMotor arm;
     DcMotor intake;
-    DcMotor duck;
+    public DcMotor duck;
+    int count = 0;
 
     Servo capstoneClaw;
 
@@ -62,6 +63,10 @@ public class Intake extends SubSystem {
 
     @Override
     public void handle() {
+        count++;
+        if (count == 1) {
+            duck.setPower(0);
+        }
         arm.setPower(-robot.gamepad2.left_stick_y/coeff);
         if (robot.gamepad2.dpad_up) {
             coeff = 2;
@@ -155,7 +160,7 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-0.5);
+            intake.setPower(-1);
         }
     }
 

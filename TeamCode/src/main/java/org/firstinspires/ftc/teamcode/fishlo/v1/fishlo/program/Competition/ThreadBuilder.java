@@ -11,7 +11,7 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 
         import java.util.ArrayList;
 
-@Autonomous
+
 public class ThreadBuilder extends FishloAutonomousProgram {
 
     public static SampleMecanumDrive mecanumDrive;

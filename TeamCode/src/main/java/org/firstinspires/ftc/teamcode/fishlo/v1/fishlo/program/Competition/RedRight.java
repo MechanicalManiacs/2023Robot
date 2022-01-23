@@ -8,9 +8,9 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 @Autonomous
-public class RedHubDuckDepot extends FishloAutonomousProgram {
-
+public class RedRight extends FishloAutonomousProgram {
     String position;
+    ElapsedTime timer;
 
     @Override
     protected Robot buildRobot() {
@@ -19,6 +19,8 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        intake.resetEncoder();
+        timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         intake.clawToInitPos();
         telemetry.addLine("Dectecting Position of Barcode");
@@ -30,7 +32,7 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
         }
         telemetry.update();
     }
-// strafe right is positive power, strafe left is negative power!
+    // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
     @Override
@@ -41,7 +43,7 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
         telemetry.addLine("1. Strafing");
         telemetry.update();
 
-        drive.driveleft(10, 0.8);
+        drive.driveRight(10, 0.8, false, 0);
 
         sleep(200);
 
@@ -52,22 +54,23 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
 
         switch(position) {
             case "Left":
+                intake.resetEncoder();
                 intake.armToLevel(0);
                 break;
             case "Center":
+                intake.resetEncoder();
                 intake.armToLevel(1);
                 break;
             case "Right":
+                intake.resetEncoder();
                 intake.armToLevel(2);
                 break;
         }
 
-        sleep(200);
-
         telemetry.addLine("4. Move up to the shipping hub");
         telemetry.update();
         //Moving towards shipping hub
-        drive.drive(20 , 0.6);
+        drive.drive(17, 0.6, false, 0);
         sleep(200);
         telemetry.addLine("5. Drop off block");
         telemetry.update();
@@ -75,21 +78,28 @@ public class RedHubDuckDepot extends FishloAutonomousProgram {
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
-        //turning the robot parallel with wall
-        drive.driveleft(-10,0.6);
-        sleep(200);
-        drive.drive(-60, 0.5);
-        intake.armToLevel(3);
         intake.stop();
+        //turning the robot parallel with wall
+        drive.drive(-22 , 0.5, false, 0);
         intake.resetEncoder();
-        sleep(200);
-        intake.spinCarousel();
-        //going backwards lol
-//        drive.drive(-10, 0.6);
+        drive.driveRight(-37,0.6, false, 0);
+        intake.intake(Intake.IntakeState.ON);
+        drive.drive(70, 0.7, false, 0);
+        drive.drive(-10,0.5, false, 0);
+        drive.strafe(5, 0.5, true, 1);
+        drive.drive(-72, 0.7, false, 0);
+        intake.intake(Intake.IntakeState.OFF);
 //        sleep(200);
-//        //strafe left
-//        drive.strafe(-40,-0.8);
-//        sleep(200);
+//        drive.drive(-47 , 0.5);
+//        drive.driveleft(1, -0.4, true, 1.5);
+//        telemetry.addLine("starting to spin the duck");
+//        telemetry.update();
+//        intake.duck.setPower(-0.6);
+//        sleep(5000);
+//        intake.duck.setPower(0);
+//        telemetry.addLine("finished spining the duck");
+//        telemetry.update();
+//        drive.drive(15, 0.7);
+//        drive.drive(22, 0.6);
     }
 }
-

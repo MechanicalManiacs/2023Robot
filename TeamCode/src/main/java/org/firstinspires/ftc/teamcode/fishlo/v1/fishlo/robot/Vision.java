@@ -27,7 +27,7 @@ public class Vision extends SubSystem {
 
     // Pink Range                                      Y      Cr     Cb
     public static Scalar scalarLowerYCrCb = new Scalar(0.0, 130.0, 20.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 100.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 230.0, 100.0);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -45,7 +45,7 @@ public class Vision extends SubSystem {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
         //OpenCV Pipeline
 
-        pipeline = new VisionPipeline(0.005, 0.005, 0.05, 0.005);
+        pipeline = new VisionPipeline(0.27, 0.005, 0.005, 0.005);
 
         pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
         pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
@@ -56,7 +56,7 @@ public class Vision extends SubSystem {
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
