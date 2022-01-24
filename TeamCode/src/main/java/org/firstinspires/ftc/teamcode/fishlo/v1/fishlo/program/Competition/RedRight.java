@@ -82,9 +82,11 @@ public class RedRight extends FishloAutonomousProgram {
         //turning the robot parallel with wall
         drive.drive(-22 , 0.5, false, 0);
         intake.resetEncoder();
-        drive.driveRight(-37,0.6, false, 0);
+        drive.driveRight(-39,0.35, false, 0);
         intake.intake(Intake.IntakeState.ON);
-        drive.drive(70, 0.7, false, 0);
+        drive.drive(55, 0.7, false, 0);
+        drive.drive(8,0.4,false,0);
+        sleep(500);
         drive.drive(-10,0.5, false, 0);
         drive.strafe(5, 0.5, true, 1);
         drive.drive(-72, 0.7, false, 0);

@@ -18,10 +18,10 @@ import org.firstinspires.ftc.teamcode.robot.SubSystem;
 
 public class Drive extends SubSystem {
 
-    DcMotorEx frontLeft;
-    DcMotorEx frontRight;
-    DcMotorEx backLeft;
-    DcMotorEx backRight;
+    public DcMotorEx frontLeft;
+    public DcMotorEx frontRight;
+    public DcMotorEx backLeft;
+    public DcMotorEx backRight;
 
     ElapsedTime timer;
 

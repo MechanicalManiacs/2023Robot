@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 @Autonomous
-public class BlueHubDuckDepot extends FishloAutonomousProgram {
+public class BlueRight extends FishloAutonomousProgram {
 
     String position;
+    ElapsedTime timer;
 
     @Override
     protected Robot buildRobot() {
@@ -18,6 +20,7 @@ public class BlueHubDuckDepot extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         intake.clawToInitPos();
         telemetry.addLine("Dectecting Position of Barcode");
@@ -29,7 +32,7 @@ public class BlueHubDuckDepot extends FishloAutonomousProgram {
         }
         telemetry.update();
     }
-// strafe right is positive power, strafe left is negative power!
+    // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
     @Override
@@ -40,7 +43,7 @@ public class BlueHubDuckDepot extends FishloAutonomousProgram {
         telemetry.addLine("1. Strafing");
         telemetry.update();
 
-        drive.driveRight(10, 0.8);
+        drive.driveRight(10, 0.8, false, 0);
 
         sleep(200);
 
@@ -65,19 +68,32 @@ public class BlueHubDuckDepot extends FishloAutonomousProgram {
 
         telemetry.addLine("4. Move up to the shipping hub");
         telemetry.update();
-        //drive towards shipping hub
-        drive.drive(18, 0.6);
+        //Moving towards shipping hub
+        drive.drive(17 , 0.6, false, 0);
         sleep(200);
         telemetry.addLine("5. Drop off block");
         telemetry.update();
+        //drop block onto shipping hub
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
+        telemetry.addLine("going back");
+        telemetry.update();
+        //turning the robot parallel with wall
+        drive.drive(-26 , 0.5, false, 0);
+        drive.driveleft(-6, 0.5, false, 0);
+        telemetry.addLine("put down arm");
+        telemetry.update();
         intake.armToLevel(3);
         intake.stop();
         intake.resetEncoder();
-        sleep(200);
-
+        drive.drive(-20 , 0.5, true, 4);
+        drive.drive(-30, 0.7, false, 0);
+        intake.spinCarousel("Blue");
+        drive.driveleft(-20, 0.4, false, 0);
+        drive.drive(15, 0.7, false, 0);
+        telemetry.addLine("Done");
+        telemetry.update();
     }
 }
 

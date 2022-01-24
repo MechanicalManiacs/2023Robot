@@ -20,12 +20,6 @@ public class Strafetest extends FishloAutonomousProgram {
 
     @Override
     public void main() {
-        telemetry.addLine("Right");
-        telemetry.update();
-        drive.strafe(5, 1, false, 0);
-        sleep(3000);
-        telemetry.addLine("Left");
-        telemetry.update();
-        drive.strafe(-5, 1, false, 0);
+        drive.strafe(15, 1, false, 0);
     }
 }

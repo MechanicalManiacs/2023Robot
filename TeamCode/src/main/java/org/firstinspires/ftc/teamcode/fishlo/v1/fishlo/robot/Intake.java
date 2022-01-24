@@ -164,17 +164,31 @@ public class Intake extends SubSystem {
         }
     }
 
-    public void spinCarousel(){
-        duckTimer.reset();
-        while (duckTimer.seconds() <= 0.7) {
-            duck.setPower(-0.4);
-        }
+    public void spinCarousel(String pos){
+        if (pos.equals("Red")) {
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 0.7) {
+                duck.setPower(-0.4);
+            }
 
-        duckTimer.reset();
-        while (duckTimer.seconds() <= 1.5){
-            duck.setPower(-0.8);
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 1.5){
+                duck.setPower(-0.8);
+            }
+            duck.setPower(0);
         }
-        duck.setPower(0);
+        else if (pos.equals("Blue")) {
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 0.7) {
+                duck.setPower(0.4);
+            }
+
+            duckTimer.reset();
+            while (duckTimer.seconds() <= 1.5){
+                duck.setPower(0.8);
+            }
+            duck.setPower(0);
+        }
 
     }
 
