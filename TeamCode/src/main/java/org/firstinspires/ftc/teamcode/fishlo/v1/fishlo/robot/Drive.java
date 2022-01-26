@@ -91,7 +91,7 @@ public class Drive extends SubSystem {
         double fl = 0, bl = 0, fr = 0, br = 0;
         driveType = driveControls[driveIndex];
 
-        if (robot.gamepad1.dpad_up) {
+        if (robot.gamepad1.a) {
             driveIndex++;
             if (driveIndex > 1) {
                 driveIndex = 0;
@@ -252,6 +252,16 @@ public class Drive extends SubSystem {
         robot.telemetry.update();
         while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
             if(timerOn && timer.seconds() <= time) return;
+        }
+        stop();
+    }
+
+    public void driveStall(double power) {
+        while (!frontLeft.isOverCurrent() && !frontRight.isOverCurrent() && !backRight.isOverCurrent() && !backLeft.isOverCurrent()) {
+            frontRight.setPower(power);
+            frontLeft.setPower(power);
+            backRight.setPower(power);
+            backLeft.setPower(power);
         }
         stop();
     }

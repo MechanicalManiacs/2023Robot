@@ -129,20 +129,23 @@ public class Intake extends SubSystem {
     }
 
     public void armToLevel(int level) {
-        double ticksPerRevHalf = 537.7/2;  //537.7
+        double ticksPerRevHalf = 537.7 / 2;  //537.7
         double ticksPerRev = 537.7;
         int target = 0;
         if (level == 0) {
+            resetEncoder();
             target = 350;
-        }
-        else if (level == 1) {
+        } else if (level == 1) {
+            resetEncoder();
             target = 500;
-        }
-        else if (level == 2) {
+        } else if (level == 2) {
+            resetEncoder();
             target = 700;
-        }
-        else if (level == 3) {
+        } else if (level == 3) {
+            resetEncoder();
             target = 0;
+        } else if (level == 4) {
+            target = 900;
         }
         arm.setTargetPosition(target);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -172,20 +175,15 @@ public class Intake extends SubSystem {
             }
 
             duckTimer.reset();
-            while (duckTimer.seconds() <= 1.5){
-                duck.setPower(-0.8);
+            while (duckTimer.seconds() <= 1.8){
+                duck.setPower(-0.6);
             }
             duck.setPower(0);
         }
         else if (pos.equals("Blue")) {
             duckTimer.reset();
-            while (duckTimer.seconds() <= 0.7) {
+            while (duckTimer.seconds() <= 3) {
                 duck.setPower(0.4);
-            }
-
-            duckTimer.reset();
-            while (duckTimer.seconds() <= 1.5){
-                duck.setPower(0.8);
             }
             duck.setPower(0);
         }

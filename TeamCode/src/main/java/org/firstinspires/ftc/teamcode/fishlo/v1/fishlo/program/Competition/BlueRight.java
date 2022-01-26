@@ -69,7 +69,7 @@ public class BlueRight extends FishloAutonomousProgram {
         telemetry.addLine("4. Move up to the shipping hub");
         telemetry.update();
         //Moving towards shipping hub
-        drive.drive(17 , 0.6, false, 0);
+        drive.drive(17 , 0.45, false, 0);
         sleep(200);
         telemetry.addLine("5. Drop off block");
         telemetry.update();
@@ -81,17 +81,23 @@ public class BlueRight extends FishloAutonomousProgram {
         telemetry.update();
         //turning the robot parallel with wall
         drive.drive(-26 , 0.5, false, 0);
-        drive.driveleft(-6, 0.5, false, 0);
+        drive.driveleft(-10.3, 0.5, false, 0);
         telemetry.addLine("put down arm");
         telemetry.update();
         intake.armToLevel(3);
         intake.stop();
         intake.resetEncoder();
-        drive.drive(-20 , 0.5, true, 4);
-        drive.drive(-30, 0.7, false, 0);
-        intake.spinCarousel("Blue");
-        drive.driveleft(-20, 0.4, false, 0);
-        drive.drive(15, 0.7, false, 0);
+        drive.drive(-26.45, 0.4, false, 0);
+        intake.duck.setPower(0.4);
+        sleep(3000);
+        intake.duck.setPower(0);
+        drive.driveleft(65,.5,false, 0);
+        intake.armToLevel(3);
+        intake.resetEncoder();
+        intake.stop();
+        intake.armToLevel(4);
+        drive.drive(3, 0.4, false, 0);
+        sleep(15000);
         telemetry.addLine("Done");
         telemetry.update();
     }
