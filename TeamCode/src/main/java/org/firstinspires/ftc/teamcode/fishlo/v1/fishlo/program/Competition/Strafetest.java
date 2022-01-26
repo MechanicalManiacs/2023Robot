@@ -20,6 +20,6 @@ public class Strafetest extends FishloAutonomousProgram {
 
     @Override
     public void main() {
-        drive.strafe(15, 1, false, 0);
+        drive.strafe(15, 0.4, false, 0);
     }
 }

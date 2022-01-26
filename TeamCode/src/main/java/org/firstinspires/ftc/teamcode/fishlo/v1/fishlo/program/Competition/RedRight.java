@@ -43,7 +43,7 @@ public class RedRight extends FishloAutonomousProgram {
         telemetry.addLine("1. Strafing");
         telemetry.update();
 
-        drive.driveRight(10, 0.8, false, 0);
+        drive.driveRight(10, 0.5, false, 0);
 
         sleep(200);
 
@@ -70,7 +70,7 @@ public class RedRight extends FishloAutonomousProgram {
         telemetry.addLine("4. Move up to the shipping hub");
         telemetry.update();
         //Moving towards shipping hub
-        drive.drive(17, 0.6, false, 0);
+        drive.drive(17, 0.5, false, 0);
         sleep(200);
         telemetry.addLine("5. Drop off block");
         telemetry.update();
@@ -80,16 +80,20 @@ public class RedRight extends FishloAutonomousProgram {
         intake.intake(Intake.IntakeState.OFF);
         intake.stop();
         //turning the robot parallel with wall
-        drive.drive(-22 , 0.5, false, 0);
+        drive.drive(-22 , 0.4, false, 0);
         intake.resetEncoder();
         drive.driveRight(-39,0.35, false, 0);
+        drive.drive(0.4, -0.4, -0.4, 0.4);
+        sleep(750);
+        drive.drive(0, 0,0, 0);
         intake.intake(Intake.IntakeState.ON);
-        drive.drive(55, 0.7, false, 0);
-        drive.drive(8,0.4,false,0);
+        drive.drive(0.4, 0.4, 0.4, 0.4);
+        sleep(3000);
+        drive.drive(0,0,0,0);
         sleep(500);
-        drive.drive(-10,0.5, false, 0);
-        drive.strafe(5, 0.5, true, 1);
-        drive.drive(-72, 0.7, false, 0);
+        drive.drive(-10,0.4, false, 0);
+        drive.strafe(5, 0.4, true, 1);
+        drive.drive(-72, 0.5, false, 0);
         intake.intake(Intake.IntakeState.OFF);
 //        sleep(200);
 //        drive.drive(-47 , 0.5);
