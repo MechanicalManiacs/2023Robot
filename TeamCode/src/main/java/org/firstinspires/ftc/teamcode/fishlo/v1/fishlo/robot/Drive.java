@@ -248,8 +248,6 @@ public class Drive extends SubSystem {
         backRight.setPower(power);
         backLeft.setPower(power);
         //
-        robot.telemetry.addLine("enter while loop");
-        robot.telemetry.update();
         while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()) {
             if(timerOn && timer.seconds() <= time) return;
         }
@@ -287,8 +285,6 @@ public class Drive extends SubSystem {
       //  backRight.setPower(power);
         backLeft.setPower(power);
         //
-        robot.telemetry.addLine("enter while loop");
-        robot.telemetry.update();
         timer.reset();
         while (frontLeft.isBusy() && backLeft.isBusy()) {
             if(timerOn && timer.seconds() >= time) return;
@@ -316,8 +312,6 @@ public class Drive extends SubSystem {
           backRight.setPower(power);
 //        backLeft.setPower(power);
         //
-        robot.telemetry.addLine("enter while loop");
-        robot.telemetry.update();
         timer.reset();
         while (frontRight.isBusy() && backRight.isBusy()) {
             if(timerOn && timer.seconds() >= time) return;
