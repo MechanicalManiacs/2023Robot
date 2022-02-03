@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.gamepad.TriggerReader;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -21,13 +22,13 @@ import java.time.OffsetDateTime;
 public class Intake extends SubSystem {
 
     public DcMotor arm;
-    DcMotor intake;
+    public DcMotor intake;
     public DcMotor duck;
     int count = 0;
 
-    Servo capstoneClaw;
+    public CRServo capstoneClaw;
 
-    int coeff = 1;
+    double coeff = 1;
 
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
@@ -58,7 +59,7 @@ public class Intake extends SubSystem {
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        capstoneClaw = robot.hardwareMap.servo.get("capstoneClaw");
+        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
     }
 
     @Override
@@ -68,17 +69,18 @@ public class Intake extends SubSystem {
             duck.setPower(0);
         }
         arm.setPower(-robot.gamepad2.left_stick_y/coeff);
+        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
         if (robot.gamepad2.dpad_up) {
-            coeff = 2;
+            coeff = 1.5;
         }
         if (robot.gamepad2.dpad_down) {
             coeff = 1;
         }
         if (robot.gamepad2.dpad_left) {
-            armToLevel(2);
+            armToLevel(2, false, 0);
         }
         if (robot.gamepad2.dpad_right) {
-            armToLevel(0);
+            armToLevel(0, false, 0);
         }
         else {
             arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -87,15 +89,7 @@ public class Intake extends SubSystem {
         if (robot.gamepad2.right_bumper) {
             duck.setPower(-0.8);
         }
-        if (robot.gamepad2.a) {
-            capstoneClaw.setPosition(0.5);
-        }
-        else if (robot.gamepad2.b) {
-            capstoneClaw.setPosition(0);
-        }
-        else if (robot.gamepad2.y) {
-            capstoneClaw.setPosition(1);
-        }
+
         duck.setPower(robot.gamepad2.right_stick_x);
 
         if (robot.gamepad2.x) {
@@ -128,24 +122,29 @@ public class Intake extends SubSystem {
         REVERSE
     }
 
-    public void armToLevel(int level) {
+    public void armToLevel(int level, boolean manual, int pos) {
         double ticksPerRevHalf = 537.7 / 2;  //537.7
         double ticksPerRev = 537.7;
         int target = 0;
-        if (level == 0) {
-            resetEncoder();
-            target = 350;
-        } else if (level == 1) {
-            resetEncoder();
-            target = 500;
-        } else if (level == 2) {
-            resetEncoder();
-            target = 700;
-        } else if (level == 3) {
-            resetEncoder();
-            target = 0;
-        } else if (level == 4) {
-            target = 900;
+        if (!manual) {
+            if (level == 0) {
+                resetEncoder();
+                target = 350;
+            } else if (level == 1) {
+                resetEncoder();
+                target = 500;
+            } else if (level == 2) {
+                resetEncoder();
+                target = 700;
+            } else if (level == 3) {
+                resetEncoder();
+                target = 0;
+            } else if (level == 4) {
+                target = 900;
+            }
+        }
+        else {
+            target = pos;
         }
         arm.setTargetPosition(target);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -200,9 +199,5 @@ public class Intake extends SubSystem {
     @Override
     public void stop() {
         arm.setPower(0);
-    }
-
-    public void clawToInitPos() {
-        capstoneClaw.setPosition(0.1);
     }
 }

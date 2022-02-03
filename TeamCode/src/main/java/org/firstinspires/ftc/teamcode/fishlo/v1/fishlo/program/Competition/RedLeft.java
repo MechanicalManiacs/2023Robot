@@ -7,6 +7,8 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousP
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
+import java.util.Objects;
+
 @Autonomous
 public class RedLeft extends FishloAutonomousProgram {
 
@@ -22,17 +24,21 @@ public class RedLeft extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
-        intake.clawToInitPos();
+        intake.capstoneClaw.setPower(-0.2);
+        sleep(100);
+        intake.capstoneClaw.setPower(0);
+        drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
-            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
-                position = vision.getPlacement();
-            }
+//            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
+//                position = vision.getPlacement();
+//            }
+            position = "Center";
             telemetry.addData("Position", position);
         }
         telemetry.update();
     }
-// strafe right is positive power, strafe left is negative power!
+    // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
     @Override
@@ -43,7 +49,7 @@ public class RedLeft extends FishloAutonomousProgram {
         telemetry.addLine("1. Strafing");
         telemetry.update();
 
-        drive.driveleft(10, 0.8, false, 0);
+        drive.driveleft(13.5, 0.8, false, 0);
 
         sleep(200);
 
@@ -54,13 +60,13 @@ public class RedLeft extends FishloAutonomousProgram {
 
         switch(position) {
             case "Left":
-                intake.armToLevel(0);
+                intake.armToLevel(0, false, 0);
                 break;
             case "Center":
-                intake.armToLevel(1);
+                intake.armToLevel(1, false, 0);
                 break;
             case "Right":
-                intake.armToLevel(2);
+                intake.armToLevel(2, false, 0);
                 break;
         }
 
@@ -69,7 +75,7 @@ public class RedLeft extends FishloAutonomousProgram {
         telemetry.addLine("4. Move up to the shipping hub");
         telemetry.update();
         //Moving towards shipping hub
-        drive.drive(20 , 0.6, false, 0);
+        drive.drive(24 , 0.6, false, 0);
         sleep(200);
         telemetry.addLine("5. Drop off block");
         telemetry.update();
@@ -78,25 +84,46 @@ public class RedLeft extends FishloAutonomousProgram {
         sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
         //turning the robot parallel with wall
-        drive.drive(-26 , 0.5, false, 0);
-        intake.armToLevel(3);
+        drive.drive(-31.5 , 0.5, false, 0);
+        intake.armToLevel(3, false, 0);
         intake.stop();
         intake.resetEncoder();
-        drive.driveleft(17,0.6,false, 0);
+        drive.driveleft(19,0.6,false, 0);
         sleep(200);
-        drive.drive(-47 , 0.5, false, 0);
+        drive.drive(-50.5 , 0.5, false, 0);
         drive.driveleft(1, -0.4,true, 1.5);
+        sleep(200);
         intake.duck.setPower(-0.6);
-        sleep(4000);
+        sleep(3000);
         intake.duck.setPower(0);
         drive.driveRight(5,0.5,true,1);
         sleep(200);
         telemetry.addLine("Forward");
         telemetry.update();
-        drive.drive(20, 0.7, false, 0);
+        drive.drive(22.5, 0.7, false, 0);
+        intake.intake(Intake.IntakeState.ON);
+        drive.driveleft(13, 0.8,false, 0);
+        drive.driveRight(-15,0.8,false, 0);
+        drive.drive(-3 , 0.5, false, 0);
+
+        intake.stop();
+        intake.intake(Intake.IntakeState.ON);
+        sleep(200);
+        drive.drive(50, 0.3, false, 0);
+        intake.intake(Intake.IntakeState.OFF);
+        intake.armToLevel(2, false, 0);
+        sleep(200);
+        drive.turnWithGyro(40, -0.4);
+        sleep(200);
+        intake.intake(Intake.IntakeState.REVERSE);
+        sleep(1500);
+        intake.intake(Intake.IntakeState.OFF);
+        drive.turnWithGyro(45, 0.4);
+        intake.stop();
+        sleep(1000);
+        drive.drive(72,1,false,0);
         telemetry.addLine("Done");
         telemetry.update();
         sleep(3000);
     }
 }
-
