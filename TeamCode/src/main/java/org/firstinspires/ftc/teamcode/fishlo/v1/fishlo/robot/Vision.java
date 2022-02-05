@@ -26,8 +26,8 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(.0, 152.0, 95.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(.0, 255.0, 128.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 128.0, 0.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 168.0, 110.0);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -45,7 +45,7 @@ public class Vision extends SubSystem {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
         //OpenCV Pipeline
 
-        pipeline = new VisionPipeline(0.27, 0.005, 0.005, 0.005);
+        pipeline = new VisionPipeline(0.17, 0.005, 0.005, 0.005);
 
         pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
         pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
@@ -83,10 +83,10 @@ public class Vision extends SubSystem {
         //Check to see if the rectangle has a large enough area to be a marker.
         if(rectangleArea > minRectangleArea){
             //Then check the location of the rectangle to see which barcode it is in.
-            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 400){
+            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 375){
                 placement = "Right";
             }
-            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 150){
+            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 240){
                 placement = "Left";
             }
             else {

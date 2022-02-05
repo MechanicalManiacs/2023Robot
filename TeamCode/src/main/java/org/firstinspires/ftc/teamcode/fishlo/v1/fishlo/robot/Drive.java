@@ -67,7 +67,7 @@ public class Drive extends SubSystem {
         NONE
     }
 
-    DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
+    DriveControls[] driveControls = {DriveControls.ARCADE, DriveControls.TANK};
     DriveControls driveType;
     int driveIndex = 0;
     boolean telemetryEnabled;

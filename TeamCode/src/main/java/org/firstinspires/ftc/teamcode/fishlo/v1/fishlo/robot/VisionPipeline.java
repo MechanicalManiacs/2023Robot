@@ -20,8 +20,8 @@ public class VisionPipeline extends OpenCvPipeline {
     Scalar ORANGE = new Scalar(255, 145, 0);
 
     // Pink, the default color                         Y      Cr     Cb    (Do not change Y)
-    public static Scalar scalarLowerYCrCb = new Scalar(144.0, 65.0, 186.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(155.0, 75.0, 196.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 0.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 0.0, 0.0);
 
     // Green                                             Y      Cr     Cb
     // public static Scalar scalarLowerYCrCb = new Scalar(  0.0, 0.0, 0.0);

@@ -135,7 +135,7 @@ public class Intake extends SubSystem {
                 target = 500;
             } else if (level == 2) {
                 resetEncoder();
-                target = 700;
+                target = 750;
             } else if (level == 3) {
                 resetEncoder();
                 target = 0;

@@ -24,16 +24,12 @@ public class RedLeft extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
-        intake.capstoneClaw.setPower(-0.2);
-        sleep(100);
-        intake.capstoneClaw.setPower(0);
         drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
-//            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
-//                position = vision.getPlacement();
-//            }
-            position = "Center";
+            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
+                position = vision.getPlacement();
+            }
             telemetry.addData("Position", position);
         }
         telemetry.update();
@@ -49,7 +45,7 @@ public class RedLeft extends FishloAutonomousProgram {
         telemetry.addLine("1. Strafing");
         telemetry.update();
 
-        drive.driveleft(13.5, 0.8, false, 0);
+        drive.driveleft(13.5, 0.5, false, 0);
 
         sleep(200);
 
@@ -90,30 +86,30 @@ public class RedLeft extends FishloAutonomousProgram {
         intake.resetEncoder();
         drive.driveleft(19,0.6,false, 0);
         sleep(200);
-        drive.drive(-50.5 , 0.5, false, 0);
-        drive.driveleft(1, -0.4,true, 1.5);
+        drive.drive(-55, 0.5, false, 0);
+        drive.driveleft(1, -0.5,true, 2.5);
         sleep(200);
-        intake.duck.setPower(-0.6);
+        intake.duck.setPower(-0.4);
         sleep(3000);
         intake.duck.setPower(0);
         drive.driveRight(5,0.5,true,1);
         sleep(200);
         telemetry.addLine("Forward");
         telemetry.update();
-        drive.drive(22.5, 0.7, false, 0);
+        drive.drive(23, 0.7, false, 0);
         intake.intake(Intake.IntakeState.ON);
         drive.driveleft(13, 0.8,false, 0);
-        drive.driveRight(-15,0.8,false, 0);
-        drive.drive(-3 , 0.5, false, 0);
+        drive.driveRight(-14,0.8,false, 0);
+        drive.drive(-8, 0.5, false, 0);
 
         intake.stop();
         intake.intake(Intake.IntakeState.ON);
         sleep(200);
-        drive.drive(50, 0.3, false, 0);
+        drive.drive(60, 0.4, false, 0);
         intake.intake(Intake.IntakeState.OFF);
         intake.armToLevel(2, false, 0);
         sleep(200);
-        drive.turnWithGyro(40, -0.4);
+        drive.turnWithGyro(25, -0.4);
         sleep(200);
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(1500);
@@ -121,7 +117,7 @@ public class RedLeft extends FishloAutonomousProgram {
         drive.turnWithGyro(45, 0.4);
         intake.stop();
         sleep(1000);
-        drive.drive(72,1,false,0);
+        drive.drive(100,1,false,0);
         telemetry.addLine("Done");
         telemetry.update();
         sleep(3000);
