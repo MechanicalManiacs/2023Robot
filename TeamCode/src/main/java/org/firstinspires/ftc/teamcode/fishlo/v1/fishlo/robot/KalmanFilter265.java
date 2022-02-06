@@ -38,7 +38,7 @@ public class KalmanFilter265 {
     private double ym = 0;
 
     private static double dt = 1;
-    private static double vara = 1.302215411599171091;
+    private static double vara = 51.268323291305;
 
     private static RealMatrix X;
     private static RealMatrix P;
@@ -83,7 +83,7 @@ public class KalmanFilter265 {
         this.ym = ym;
     }
 
-    public void runFilter() {
+    public void filterSetup() {
         //System State
         double[][] Xmat =
                 {
@@ -98,7 +98,7 @@ public class KalmanFilter265 {
 
         //Estimate Uncertainty
         P = MatrixUtils.createRealIdentityMatrix(6);
-        P = P.scalarMultiply(500);
+        P = P.scalarMultiply(100);
 
         //State Transition
         double[][] Fmat =
@@ -133,81 +133,7 @@ public class KalmanFilter265 {
         //Covariance
         P = cov_ext(P);
 
-        for (int i = 0; i < 500; i++) {
-            //mes eq
-            double xm = 0;
-            double ym = 0;
-            xs_list.add(xm);
-            ys_list.add(ym);
-            double[][] xmymMat =
-                    {
-                            {xm},
-                            {ym}
-                    };
-            Z = new Array2DRowRealMatrix(xmymMat);
 
-            double[][] Hmat =
-                    {
-                            {1, 0, 0, 0, 0, 0},
-                            {0, 0, 0, 1, 0, 0}
-                    };
-            H = new Array2DRowRealMatrix(Hmat);
-            Ht = H.transpose();
-
-            //Measurement Uncertainty
-            double varxm = 9;
-            double varym = 9;
-
-            double[][] Rmat =
-                    {
-                            {varxm,  0},
-                            {0, varym}
-                    };
-            R = new Array2DRowRealMatrix(Rmat);
-
-            //Kalman Gain
-            K1 = P.multiply(Ht);
-
-            k_21 = H.multiply(P);
-
-            K2 = k_21.multiply(Ht);
-
-            K3 = K2.add(R);
-            K4 = new LUDecomposition(K3).getSolver().getInverse();
-
-            K = K1.multiply(K4);
-
-            //State Update
-            XN1 = H.multiply(X);
-            XN2 = Z.subtract(XN1);
-            XN3 = K.multiply(XN2);
-            XN = X.add(XN3);
-            X = XN;
-            System.out.println(X.getEntry(0, 0) + " " + X.getEntry(3, 0));
-            x_list.add(X.getEntry(0, 0));
-            y_list.add(X.getEntry(3, 0));
-
-            //Covariance Update
-            I = MatrixUtils.createRealIdentityMatrix(6);
-            PN_1 = K.multiply(H);
-            PN2 = I.subtract(PN_1);
-
-            //(I-KH)P(I-KH)^T+KRK^T
-            PN3 = PN2.transpose();
-            PN4 = PN2.multiply(P);
-            PN5 = PN4.multiply(PN3);
-
-            PN6 = K.transpose();
-            PN7 = K.multiply(R);
-            PN8 = PN7.multiply(PN6);
-
-            PN = PN5.add(PN8);
-            P = PN;
-
-            //Predict
-            X = F.multiply(X);
-            P = cov_ext(P);
-        }
     }
 
     public RealMatrix cov_ext(RealMatrix P) {
@@ -215,5 +141,98 @@ public class KalmanFilter265 {
         RealMatrix P2 = P1.multiply(Ft);
         P = P2.add(Q);
         return P;
+    }
+
+    public void runFilter() {
+        //mes eq
+        double xm = this.xm;
+        double ym = this.ym;
+        xs_list.add(xm);
+        ys_list.add(ym);
+        double[][] xmymMat =
+                {
+                        {xm},
+                        {ym}
+                };
+        Z = new Array2DRowRealMatrix(xmymMat);
+
+        double[][] Hmat =
+                {
+                        {1, 0, 0, 0, 0, 0},
+                        {0, 0, 0, 1, 0, 0}
+                };
+        H = new Array2DRowRealMatrix(Hmat);
+        Ht = H.transpose();
+
+        //Measurement Uncertainty
+        double varxm = 144;
+        double varym = 144;
+
+        double[][] Rmat =
+                {
+                        {varxm,  0},
+                        {0, varym}
+                };
+        R = new Array2DRowRealMatrix(Rmat);
+
+        //Kalman Gain
+        K1 = P.multiply(Ht);
+
+        k_21 = H.multiply(P);
+
+        K2 = k_21.multiply(Ht);
+
+        K3 = K2.add(R);
+        K4 = new LUDecomposition(K3).getSolver().getInverse();
+
+        K = K1.multiply(K4);
+
+        //State Update
+        XN1 = H.multiply(X);
+        XN2 = Z.subtract(XN1);
+        XN3 = K.multiply(XN2);
+        XN = X.add(XN3);
+        X = XN;
+
+        //Covariance Update
+        I = MatrixUtils.createRealIdentityMatrix(6);
+        PN_1 = K.multiply(H);
+        PN2 = I.subtract(PN_1);
+
+        //(I-KH)P(I-KH)^T+KRK^T
+        PN3 = PN2.transpose();
+        PN4 = PN2.multiply(P);
+        PN5 = PN4.multiply(PN3);
+
+        PN6 = K.transpose();
+        PN7 = K.multiply(R);
+        PN8 = PN7.multiply(PN6);
+
+        PN = PN5.add(PN8);
+        P = PN;
+
+        //Predict
+        X = F.multiply(X);
+        P = cov_ext(P);
+    }
+
+    public void setxm(double xm) {
+        this.xm = xm;
+    }
+
+    public void setym(double ym) {
+        this.ym = ym;
+    }
+
+    public double getStateUpdateX() {
+        return X.getEntry(0, 0);
+    }
+
+    public double getStateUpdateY() {
+        return X.getEntry(3, 0);
+    }
+
+    public double getGain() {
+        return K.getEntry(0,0);
     }
 }
