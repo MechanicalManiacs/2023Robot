@@ -68,8 +68,8 @@ public class KalmanFilter265Localizer implements Localizer {
         if (up != null) {
             Translation2d oldPose = up.pose.getTranslation();
             Rotation2d oldRotation = up.pose.getRotation();
-            filter.setxm(oldPose.getY() * 39.3701);
-            filter.setym(oldPose.getX() * 39.3701);
+            filter.setxm(oldPose.getX() * 39.3701);
+            filter.setym(oldPose.getY() * 39.3701);
             filter.runFilter();
             rawPose = new Pose2d(filter.getStateUpdateX() / 0.0254, filter.getStateUpdateY() / 0.0245, norm(oldRotation.getRadians()));
             mPosEstimate = rawPose.plus(poseOffset);

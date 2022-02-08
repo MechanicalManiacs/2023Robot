@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.spartronics4915.lib.T265Camera;
 
 public class T265Manager {
-    private static Transform2d cameraRobotOffset = new Transform2d(new Translation2d(0, 0), new Rotation2d(0));
+    private static Transform2d cameraRobotOffset = new Transform2d(new Translation2d(0.03175, 0.12065), new Rotation2d(Math.toRadians(-90)));
     private static double odometryCovariance = 0;
 
     private static T265Camera apache = null;
