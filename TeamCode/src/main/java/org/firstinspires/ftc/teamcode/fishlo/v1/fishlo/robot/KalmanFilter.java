@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 
 
 
-public class KalmanFilter265 {
+public class KalmanFilter {
 
     private double start = System.currentTimeMillis();
 
@@ -37,7 +37,7 @@ public class KalmanFilter265 {
     private double xm = 0;
     private double ym = 0;
 
-    private static double dt = 1;
+    private static double dt = .8;
     private static double vara = 51.268323291305;
 
     private static RealMatrix X;
@@ -78,7 +78,7 @@ public class KalmanFilter265 {
     private static ArrayList<Double> xs_list = new ArrayList<>();
     private static ArrayList<Double> ys_list = new ArrayList<>();
 
-    public KalmanFilter265(double xm, double ym) {
+    public KalmanFilter(double xm, double ym) {
         this.xm = xm;
         this.ym = ym;
     }

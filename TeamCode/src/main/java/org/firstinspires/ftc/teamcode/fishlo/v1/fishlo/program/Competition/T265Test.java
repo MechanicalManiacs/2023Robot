@@ -2,12 +2,10 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Transform2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
-import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.KalmanFilter265;
+import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.KalmanFilter;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.T265Manager;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
@@ -16,14 +14,11 @@ import com.spartronics4915.lib.T265Camera;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Autonomous
 public class T265Test extends FishloAutonomousProgram {
 
-    KalmanFilter265 filter;
+    KalmanFilter filter;
     T265Camera apache;
     ElapsedTime timer = new ElapsedTime();
     boolean free = false;
@@ -36,7 +31,7 @@ public class T265Test extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
-        filter = new KalmanFilter265(0, 0);
+        filter = new KalmanFilter(0, 0);
         filter.filterSetup();
         telemetry.setAutoClear(true);
         apache = T265Manager.get(hardwareMap);
@@ -73,7 +68,7 @@ public class T265Test extends FishloAutonomousProgram {
                     t.cancel();
                 }
             }
-        }, 0, 500);
+        }, 0, 100);
         while (!isStopRequested()) {
             sleep(2000);
         }
