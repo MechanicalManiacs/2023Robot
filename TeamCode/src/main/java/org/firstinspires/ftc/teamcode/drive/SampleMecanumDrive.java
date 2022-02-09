@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -29,6 +27,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.spartronics4915.lib.T265Camera;
+import com.spartronics4915.lib.T265Helper;
+import com.spartronics4915.lib.T265Localizer;
 
 import org.firstinspires.ftc.teamcode.drive.localizer.KalmanFilter265Localizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -58,10 +59,10 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
     private static boolean USE_T265 = true;
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(4.5, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(7, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1.241952524;
+    public static double LATERAL_MULTIPLIER = 1;
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -128,18 +129,10 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        if (USE_T265) {
-            try {
-                setLocalizer(new KalmanFilter265Localizer(hardwareMap));
-            }
-            catch (Exception e) {
-                RobotLog.addGlobalWarningMessage("FAILED TO INIT T265");
-            }
-        }
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
     }
@@ -290,8 +283,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        if (USE_T265) return KalmanFilter265Localizer.getHeading();
-        else return imu.getAngularOrientation().firstAngle;
+        return imu.getAngularOrientation().firstAngle;
     }
 
     @Override
