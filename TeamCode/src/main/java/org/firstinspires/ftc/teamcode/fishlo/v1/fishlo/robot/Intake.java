@@ -159,10 +159,10 @@ public class Intake extends SubSystem {
             intake.setPower(0);
         }
         else if (state == IntakeState.ON) {
-            intake.setPower(1);
+            intake.setPower(0.5);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-1);
+            intake.setPower(-0.5);
         }
     }
 
