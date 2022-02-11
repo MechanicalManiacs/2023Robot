@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 import java.util.Vector;
 
 @Autonomous
-public class red_warehouse extends FishloAutonomousProgram {
+public class blue_warehouse extends FishloAutonomousProgram {
     String position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
@@ -70,7 +70,7 @@ public class red_warehouse extends FishloAutonomousProgram {
         }
 
         Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, 16), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(20, -16), Math.toRadians(0))
                 .build();
         mdrive.followTrajectory(to_hub);
 //        Trajectory turn10 = mdrive.trajectoryBuilder(to_hub.end())
@@ -100,13 +100,13 @@ public class red_warehouse extends FishloAutonomousProgram {
         intake.stop();
         Pose2d turn_pose = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(-90));
         Trajectory Test = mdrive.trajectoryBuilder(turn_pose)
-                .splineToConstantHeading(new Vector2d(-10, -5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-10, 5), Math.toRadians(-90))
                 .addDisplacementMarker(() -> {
                     intake.intake(Intake.IntakeState.ON);
 
                 })
-                .splineToConstantHeading(new Vector2d(-10,-35), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-10, -45), Math.toRadians(-90),
+                .splineToConstantHeading(new Vector2d(-10,35), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-10, 45), Math.toRadians(-90),
                         SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
@@ -117,7 +117,7 @@ public class red_warehouse extends FishloAutonomousProgram {
 
 
         Trajectory back_test = mdrive.trajectoryBuilder(turn_pose)
-                .splineToConstantHeading(new Vector2d(0, -5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(0, 5), Math.toRadians(-90))
 
                 .build();
 
@@ -138,13 +138,13 @@ public class red_warehouse extends FishloAutonomousProgram {
         sleep(500);
         Pose2d allah = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(-90));
         Trajectory pls_work = mdrive.trajectoryBuilder(allah)
-                .splineToConstantHeading(new Vector2d(-15, -5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, 5), Math.toRadians(-90))
                 .addDisplacementMarker(() -> {
                     intake.intake(Intake.IntakeState.ON);
 
                 })
-                .splineToConstantHeading(new Vector2d(-10,-35), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -45), Math.toRadians(-90),
+                .splineToConstantHeading(new Vector2d(-10,-5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, 45), Math.toRadians(-90),
                         SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
@@ -192,4 +192,5 @@ public class red_warehouse extends FishloAutonomousProgram {
 
 
 }
+
 

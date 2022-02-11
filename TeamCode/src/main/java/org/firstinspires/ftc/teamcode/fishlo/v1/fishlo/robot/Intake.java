@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.sun.tools.javac.tree.DCTree;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
@@ -24,6 +25,7 @@ public class Intake extends SubSystem {
     public DcMotor arm;
     public DcMotor intake;
     public DcMotor duck;
+    public DcMotor duck2;
     int count = 0;
 
     public CRServo capstoneClaw;
@@ -58,6 +60,7 @@ public class Intake extends SubSystem {
         arm = robot.hardwareMap.dcMotor.get("arm");
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
+        duck2 = robot.hardwareMap.dcMotor.get("carousel2");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
     }
@@ -159,7 +162,7 @@ public class Intake extends SubSystem {
             intake.setPower(0);
         }
         else if (state == IntakeState.ON) {
-            intake.setPower(0.5);
+            intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
             intake.setPower(-0.5);
