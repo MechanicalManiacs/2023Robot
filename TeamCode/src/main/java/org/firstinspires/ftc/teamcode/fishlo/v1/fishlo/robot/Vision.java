@@ -1,47 +1,101 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
+import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
 
 public class Vision extends SubSystem {
 
-    private OpenCvCamera camera;
-    private String webcamName = "webcam";
+    private OpenCvCamera webcam;
     private VisionPipeline pipeline;
-    private OpenCvCameraRotation ORIENTATION = OpenCvCameraRotation.UPRIGHT;
 
-    private int fov = 78;
+    private double crThreshHigh = 150;
+    private double crThreshLow = 120;
+    private double cbThreshHigh = 255;
+    private double cbThreshLow = 255;
 
-    public static int CAMERA_WIDTH = 320, CAMERA_HEIGHT = 240;
+    private int minRectangleArea = 2000;
+    private double leftBarcodeRangeBoundary = 0.32; //i.e 30% of the way across the frame from the left
+    private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
-    public enum position {
-        LEFT,
-        RIGHT,
-        CENTER,
-        NULL
-    }
+    // Pink Range                                      Y      Cr     Cb
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 140.0, 0.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 200.0, 80.0);
 
+    /**
+     * Construct a subsystem with the robot it applies to.
+     *
+     * @param robot
+     */
     public Vision(Robot robot) {
         super(robot);
     }
 
     @Override
     public void init() {
-        int cameraMonitorViewId =
-                robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, webcamName), cameraMonitorViewId);
+        // OpenCV webcam
+        int cameraMonitorViewId = robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
+        //OpenCV Pipeline
 
-        camera.setPipeline(pipeline = new VisionPipeline(fov));
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        pipeline = new VisionPipeline(0.17, 0.005, 0.005, 0.005);
+
+        pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
+        pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
+
+        webcam.setPipeline(pipeline);
+
+        // Webcam Streaming
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, ORIENTATION);
+                webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
             }
         });
+    }
+
+    public String getPlacement() {
+        String placement = "";
+        if(pipeline.error){
+            robot.telemetry.addData("Exception: ", pipeline.debug.getStackTrace());
+        }
+        // Only use this line of the code when you want to find the lower and upper values, using Ftc Dashboard (https://acmerobotics.github.io/ftc-dashboard/gettingstarted)
+        // testing(pipeline);
+
+        // Watch our YouTube Tutorial for the better explanation
+
+        double rectangleArea = pipeline.getRectArea();
+
+        //Print out the area of the rectangle that is found.
+
+        //Check to see if the rectangle has a large enough area to be a marker.
+        if(rectangleArea > minRectangleArea){
+            //Then check the location of the rectangle to see which barcode it is in.
+            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 375){
+                placement = "Right";
+            }
+            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 240){
+                placement = "Left";
+            }
+            else {
+                placement = "Center";
+            }
+        }
+
+        robot.telemetry.update();
+        return placement;
     }
 
     @Override
@@ -51,43 +105,6 @@ public class Vision extends SubSystem {
 
     @Override
     public void stop() {
-        camera.stopStreaming();
+        webcam.closeCameraDevice();
     }
-
-    public String getQRCodeData() {
-        return pipeline.getData();
-    }
-
-    public boolean validateData(int match_number) {
-        String data = getQRCodeData();
-        return data.equals("16447-" + match_number);
-    }
-
-    public boolean validateData(boolean practice) {
-        String data = getQRCodeData();
-        return data.equals("16447");
-    }
-
-    public position getPosition() {
-        position pos = position.CENTER;
-        double angle = pipeline.getAngle(pipeline.getCenter(), 0);
-
-        robot.telemetry.addData("Center of QR Code", pipeline.getCenter().x + " + " + pipeline.getCenter().y);
-
-        if (angle >= -39 && angle <= -13) {
-            pos = position.LEFT;
-        }
-        else if (angle >= -13 && angle <= 13) {
-            pos = position.CENTER;
-        }
-        else if (angle >= 13 && angle <= 39) {
-            pos = position.RIGHT;
-        }
-        else {
-            pos = position.NULL;
-        }
-
-        return pos;
-    }
-
 }
