@@ -115,9 +115,9 @@ public class Drive extends SubSystem {
 
         switch (driveType) {
             case ARCADE:
-                double y = robot.gamepad1.left_stick_y; // Remember, this is reversed!
-                double x = -robot.gamepad1.left_stick_x; // Counteract imperfect strafing
-                double rx = -robot.gamepad1.right_stick_x;
+                double y = -robot.gamepad1.left_stick_y; // Remember, this is reversed!
+                double x = robot.gamepad1.left_stick_x; // Counteract imperfect strafing
+                double rx = robot.gamepad1.right_stick_x;
 
                 // Denominator is the largest motor power (absolute value) or 1
                 // This ensures all the powers maintain the same ratio, but only when
@@ -136,17 +136,17 @@ public class Drive extends SubSystem {
                 break;
 
             case TANK:
-                fl = robot.gamepad1.left_stick_y / coeff;
-                fr = robot.gamepad1.right_stick_y / coeff;
-                bl = robot.gamepad1.left_stick_y / coeff;
-                br = robot.gamepad1.right_stick_y / coeff;
-                if (robot.gamepad1.right_bumper) {
+                fl = -robot.gamepad1.left_stick_y / coeff;
+                fr = -robot.gamepad1.right_stick_y / coeff;
+                bl = -robot.gamepad1.left_stick_y / coeff;
+                br = -robot.gamepad1.right_stick_y / coeff;
+                if (robot.gamepad1.left_bumper) {
                     fl = -1 / coeff;
                     fr = 1 / coeff;
                     bl = 1 / coeff;
                     br = -1 / coeff;
                 }
-                if (robot.gamepad1.left_bumper) {
+                if (robot.gamepad1.right_bumper) {
                     fl = 1 / coeff;
                     fr = -1 / coeff;
                     bl = -1 / coeff;

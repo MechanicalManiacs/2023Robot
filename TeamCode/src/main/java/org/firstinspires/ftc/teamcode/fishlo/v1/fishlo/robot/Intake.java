@@ -94,6 +94,7 @@ public class Intake extends SubSystem {
         }
 
         duck.setPower(robot.gamepad2.right_stick_x);
+        duck2.setPower(robot.gamepad2.right_stick_x);
 
         if (robot.gamepad2.x) {
             duckTimer.reset();
