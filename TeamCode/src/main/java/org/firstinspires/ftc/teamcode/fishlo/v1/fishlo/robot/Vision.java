@@ -26,8 +26,8 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 152.0, 95.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 128.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 140.0, 0.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 200.0, 80.0);
 
     /**
      * Construct a subsystem with the robot it applies to.

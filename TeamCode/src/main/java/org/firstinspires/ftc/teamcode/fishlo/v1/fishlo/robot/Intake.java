@@ -110,10 +110,10 @@ public class Intake extends SubSystem {
         }
 
         if (robot.gamepad2.right_trigger >= 0.5) {
-            intake(IntakeState.ON);
+            intake.setPower(1);
         }
         else if (robot.gamepad2.left_trigger >= 0.5) {
-            intake(IntakeState.REVERSE);
+            intake.setPower(-1);
         }
         else {
             intake(IntakeState.OFF);

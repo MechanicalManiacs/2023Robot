@@ -59,16 +59,6 @@ public class red_carousel extends FishloAutonomousProgram {
         drive.setPoseEstimate(new Pose2d());
         Pose2d start_pose = new Pose2d(0,0, Math.toRadians(0));
 
-
-        telemetry.addLine("2. Squaring up with wall");
-        telemetry.update();
-        telemetry.addLine("3. Move arm to position");
-        telemetry.update();
-        Trajectory to_hub  = drive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20,  -16),Math.toRadians(0))
-                .build();
-        drive.followTrajectory(to_hub);
-
         switch(position) {
             case "Left":
                 intake.armToLevel(0, false, 0);
@@ -80,10 +70,20 @@ public class red_carousel extends FishloAutonomousProgram {
                 intake.armToLevel(2, false, 0);
                 break;
         }
+
+        telemetry.addLine("2. Squaring up with wall");
+        telemetry.update();
+        telemetry.addLine("3. Move arm to position");
+        telemetry.update();
+        Trajectory to_hub  = drive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(20,  -16),Math.toRadians(0))
+                .build();
+        drive.followTrajectory(to_hub);
+
         sleep(200);
         drive.turn(Math.toRadians(-10));
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(100);
+        sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
         sleep(100);
         drive.turn(Math.toRadians(10));
@@ -99,7 +99,7 @@ public class red_carousel extends FishloAutonomousProgram {
         drive.followTrajectory(to_wall);
         sleep(100);
         intake.duck.setPower(-0.4);
-        sleep(3000);
+        sleep(5000);
         Trajectory Park = drive.trajectoryBuilder(to_wall.end())
                 .splineToConstantHeading(new Vector2d(20,40), Math.toRadians(0))
                 .build();
