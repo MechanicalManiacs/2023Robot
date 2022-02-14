@@ -136,7 +136,7 @@ public class blue_warehouse extends FishloAutonomousProgram {
         mdrive.followTrajectory(bt2);
         intake.armToLevel(4, true, 1500);
         mdrive.turn(Math.toRadians(60));
-        intake.intake(Intake.IntakeState.REVERSE);
+        intake.intake.setPower(-0.35);
         sleep(967);
         intake.armToLevel(0,true,0);
 

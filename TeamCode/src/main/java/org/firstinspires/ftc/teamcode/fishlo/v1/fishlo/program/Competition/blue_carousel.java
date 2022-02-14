@@ -45,6 +45,7 @@ public class blue_carousel extends FishloAutonomousProgram {
     // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
+    // fax
     @Override
     public void main() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -77,15 +78,16 @@ public class blue_carousel extends FishloAutonomousProgram {
         telemetry.update();
         telemetry.addLine("3. Move arm to position");
         telemetry.update();
+        sleep(5000);
         Trajectory to_hub = drive.trajectoryBuilder(start_pose)
                 .splineToConstantHeading(new Vector2d(20, 16), Math.toRadians(0))
                 .build();
         drive.followTrajectory(to_hub);
 
         sleep(200);
-        drive.turn(Math.toRadians(10));
+        drive.turn(Math.toRadians(12));
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(1000);
+        sleep(2000);
         intake.intake(Intake.IntakeState.OFF);
         sleep(250);
         drive.turn(Math.toRadians(-10));
@@ -93,7 +95,7 @@ public class blue_carousel extends FishloAutonomousProgram {
         sleep(100);
         Trajectory to_wall = drive.trajectoryBuilder(to_hub.end(), true)
                 .splineToConstantHeading(new Vector2d(0, -20), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(-5, -30), Math.toRadians(0),
+                .splineToConstantHeading(new Vector2d(-4, -30), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
