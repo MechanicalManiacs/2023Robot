@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
 import org.opencv.core.Scalar;
@@ -10,6 +11,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.easyopencv.OpenCvInternalCamera2;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 public class Vision extends SubSystem {
 
@@ -26,8 +29,8 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 128.0, 0.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 168.0, 110.0);
+    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 153.6, 0.0);
+    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 230.4, 102.4);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -43,6 +46,7 @@ public class Vision extends SubSystem {
         // OpenCV webcam
         int cameraMonitorViewId = robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
+
         //OpenCV Pipeline
 
         pipeline = new VisionPipeline(0.17, 0.005, 0.005, 0.005);
@@ -64,6 +68,8 @@ public class Vision extends SubSystem {
 
             }
         });
+
+
     }
 
     public String getPlacement() {
@@ -83,10 +89,10 @@ public class Vision extends SubSystem {
         //Check to see if the rectangle has a large enough area to be a marker.
         if(rectangleArea > minRectangleArea){
             //Then check the location of the rectangle to see which barcode it is in.
-            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 375){
+            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 360) {
                 placement = "Right";
             }
-            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 240){
+            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 230) {
                 placement = "Left";
             }
             else {

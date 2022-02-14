@@ -45,6 +45,7 @@ public class blue_carousel extends FishloAutonomousProgram {
     // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
+    // fax
     @Override
     public void main() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -60,16 +61,6 @@ public class blue_carousel extends FishloAutonomousProgram {
         drive.setPoseEstimate(new Pose2d());
         Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
 
-
-        telemetry.addLine("2. Squaring up with wall");
-        telemetry.update();
-        telemetry.addLine("3. Move arm to position");
-        telemetry.update();
-        Trajectory to_hub = drive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, 16), Math.toRadians(0))
-                .build();
-        drive.followTrajectory(to_hub);
-
         switch (position) {
             case "Left":
                 intake.armToLevel(0, false, 0);
@@ -81,18 +72,30 @@ public class blue_carousel extends FishloAutonomousProgram {
                 intake.armToLevel(2, false, 0);
                 break;
         }
+
+
+        telemetry.addLine("2. Squaring up with wall");
+        telemetry.update();
+        telemetry.addLine("3. Move arm to position");
+        telemetry.update();
+        sleep(5000);
+        Trajectory to_hub = drive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(20, 16), Math.toRadians(0))
+                .build();
+        drive.followTrajectory(to_hub);
+
         sleep(200);
-        drive.turn(Math.toRadians(10));
+        drive.turn(Math.toRadians(12));
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(100);
+        sleep(2000);
         intake.intake(Intake.IntakeState.OFF);
-        sleep(100);
+        sleep(250);
         drive.turn(Math.toRadians(-10));
 
         sleep(100);
         Trajectory to_wall = drive.trajectoryBuilder(to_hub.end(), true)
                 .splineToConstantHeading(new Vector2d(0, -20), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(-5, -30), Math.toRadians(0),
+                .splineToConstantHeading(new Vector2d(-4, -30), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
@@ -100,9 +103,9 @@ public class blue_carousel extends FishloAutonomousProgram {
         drive.followTrajectory(to_wall);
         sleep(100);
         intake.duck2.setPower(0.4);
-        sleep(3000);
+        sleep(5000);
         Trajectory Park = drive.trajectoryBuilder(to_wall.end())
-                .splineToConstantHeading(new Vector2d(30, -40), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(23, -40), Math.toRadians(0))
                 .build();
         drive.followTrajectory(Park);
 

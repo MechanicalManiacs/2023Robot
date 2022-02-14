@@ -70,7 +70,7 @@ public class blue_warehouse extends FishloAutonomousProgram {
         }
 
         Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, -16), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(22, -16), Math.toRadians(0))
                 .build();
         mdrive.followTrajectory(to_hub);
 //        Trajectory turn10 = mdrive.trajectoryBuilder(to_hub.end())
@@ -90,66 +90,79 @@ public class blue_warehouse extends FishloAutonomousProgram {
 
 
         sleep(200);
-        mdrive.turn(Math.toRadians(10));
+        mdrive.turn(Math.toRadians(-10));
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         //drops the bonus block
         sleep(100);
-        mdrive.turn(Math.toRadians(-85));
+        mdrive.turn(Math.toRadians(85));
         intake.stop();
-        Pose2d turn_pose = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(-90));
+        Pose2d turn_pose = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(90));
         Trajectory Test = mdrive.trajectoryBuilder(turn_pose)
-                .splineToConstantHeading(new Vector2d(-10, 5), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-10, 5), Math.toRadians(90))
                 .addDisplacementMarker(() -> {
                     intake.intake(Intake.IntakeState.ON);
 
                 })
-                .splineToConstantHeading(new Vector2d(-10,35), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-10, 45), Math.toRadians(-90),
+                .splineToConstantHeading(new Vector2d(-13,35), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-13, 45), Math.toRadians(90),
                         SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
                 .build();
         //drive to the warehouse
         mdrive.followTrajectory(Test);
+//        Trajectory starfe = mdrive.trajectoryBuilder(Test.end())
+//                .strafeLeft(5)
+//                .build();
+//        mdrive.followTrajectory(starfe);
 
 
 
-        Trajectory back_test = mdrive.trajectoryBuilder(turn_pose)
-                .splineToConstantHeading(new Vector2d(0, 5), Math.toRadians(-90))
+
+        Trajectory back_test = mdrive.trajectoryBuilder(Test.end(), true)
+
+                .splineToConstantHeading(new Vector2d(-20, 10), Math.toRadians(90))
 
                 .build();
 
         mdrive.followTrajectory(back_test);
         intake.intake(Intake.IntakeState.OFF);
         Trajectory bt2 = mdrive.trajectoryBuilder(back_test.end(), true)
-                .splineToConstantHeading(new Vector2d(18, 14), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(5, -14), Math.toRadians(90))
                 .build();
 
         mdrive.followTrajectory(bt2);
         intake.armToLevel(4, true, 1500);
-        mdrive.turn(Math.toRadians(-50));
-        intake.intake(Intake.IntakeState.REVERSE);
+        mdrive.turn(Math.toRadians(60));
+        intake.intake.setPower(-0.35);
         sleep(967);
         intake.armToLevel(0,true,0);
-        mdrive.turn(Math.toRadians(-50));
+
+
 
         sleep(500);
-        Pose2d allah = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(-90));
-        Trajectory pls_work = mdrive.trajectoryBuilder(allah)
-                .splineToConstantHeading(new Vector2d(-15, 5), Math.toRadians(-90))
+        Pose2d fish = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(90));
+        Trajectory pls_work = mdrive.trajectoryBuilder(fish)
+                .splineToConstantHeading(new Vector2d(-25, 0), Math.toRadians(90))
                 .addDisplacementMarker(() -> {
                     intake.intake(Intake.IntakeState.ON);
 
                 })
-                .splineToConstantHeading(new Vector2d(-10,-5), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, 45), Math.toRadians(-90),
+
+
+                .splineToConstantHeading(new Vector2d(-25, 45), Math.toRadians(90),
                         SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
                 .build();
+//        Trajectory snake = mdrive.trajectoryBuilder(pls_work.end())
+//                .splineToLinearHeading(new Pose2d(-45, 28), Math.toRadians(-90))
+//                .build();
+
         mdrive.followTrajectory(pls_work);
+//        mdrive.followTrajectory(snake);
 
 
 
