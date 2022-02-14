@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Range;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -13,6 +15,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TSEDetectionPipeline extends OpenCvPipeline {
+
+    static final Rect LEFT_ROI = new Rect(
+            new Point( 0, 0 ),
+            new Point( 426, 720 ) );
+    static final Rect MIDDLE_ROI = new Rect(
+            new Point( 426, 0 ),
+            new Point( 852, 720 ) );
+    static final Rect RIGHT_ROI = new Rect(
+            new Point( 852, 0 ),
+            new Point( 1278, 720 ) );
 
     public Scalar HSVUpper = new Scalar(0, 0, 0);
     public Scalar HSVLower = new Scalar(0, 0, 0);
@@ -76,9 +88,9 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
     }
 
     public Mat getContours(Mat maskedImage, Mat input) {
-        Mat left = maskedImage.submat(new Range(1, input.rows() / 3), new Range(0, input.cols()));
-        Mat center = maskedImage.submat(new Range(input.rows() / 3, 2 * input.cols() / 3), new Range(0, input.cols()));
-        Mat right = maskedImage.submat(new Range(2 * input.rows() / 3, input.rows()), new Range(0, input.cols()));
+        Mat left = maskedImage.submat(LEFT_ROI);
+        Mat center = maskedImage.submat(MIDDLE_ROI);
+        Mat right = maskedImage.submat(RIGHT_ROI);
 
         //find contours
         List<MatOfPoint> contoursleft = new ArrayList<>();
