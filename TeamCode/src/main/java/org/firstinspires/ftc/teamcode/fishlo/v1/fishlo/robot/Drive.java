@@ -55,7 +55,7 @@ public class Drive extends SubSystem {
 
     DcMotor arm;
 
-    SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
+    SampleMecanumDrive mecanumDrive;
 
     DcMotor[] motors = {frontLeft, frontRight, backLeft, backRight};
 
@@ -86,6 +86,7 @@ public class Drive extends SubSystem {
 
     @Override
     public void init() {
+        mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
         frontLeft = robot.hardwareMap.get(DcMotorEx.class, "frontLeft");
         frontRight = robot.hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = robot.hardwareMap.get(DcMotorEx.class, "backLeft");
@@ -94,6 +95,8 @@ public class Drive extends SubSystem {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         arm = robot.hardwareMap.dcMotor.get("arm");
         timer = new ElapsedTime();
         drive = new MecanumDrive(fl, fr, bl, br);
@@ -115,24 +118,14 @@ public class Drive extends SubSystem {
 
         switch (driveType) {
             case ARCADE:
-                double y = robot.gamepad1.left_stick_y; // Remember, this is reversed!
-                double x = -robot.gamepad1.left_stick_x; // Counteract imperfect strafing
-                double rx = -robot.gamepad1.right_stick_x;
-
-                // Denominator is the largest motor power (absolute value) or 1
-                // This ensures all the powers maintain the same ratio, but only when
-                // at least one is out of the range [-1, 1]
-                double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-                double frontLeftPower = (y + x + rx) / denominator;
-                double backLeftPower = (y - x + rx) / denominator;
-                double frontRightPower = (y - x - rx) / denominator;
-                double backRightPower = (y + x - rx) / denominator;
-
-                fl = frontLeftPower / coeff;
-                bl = backLeftPower / coeff;
-                fr = frontRightPower / coeff;
-                br = backRightPower / coeff;
-
+                mecanumDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                mecanumDrive.setWeightedDrivePower(
+                        new Pose2d(
+                                -robot.gamepad1.left_stick_y / coeff,
+                                -robot.gamepad1.left_stick_x / coeff,
+                                -robot.gamepad1.right_stick_x / coeff
+                        )
+                );
                 break;
 
             case TANK:
