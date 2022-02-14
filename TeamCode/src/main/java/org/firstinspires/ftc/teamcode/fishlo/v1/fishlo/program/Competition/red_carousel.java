@@ -28,15 +28,21 @@ public class red_carousel extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        position = "";
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
+        String placement = "";
         while (!isStarted()) {
-            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
-                position = vision.getPlacement();
+            placement = vision.getPlacement();
+            if (placement.equals("Left") || placement.equals("Right") || placement.equals("Center")) {
+                position = placement;
+                telemetry.addData("Position", position);
             }
-            telemetry.addData("Position", position);
+            else if (placement.equals(null)) {
+                telemetry.addLine("not found");
+            }
         }
         telemetry.update();
 
@@ -46,12 +52,19 @@ public class red_carousel extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
+        if (!position.equals("Left") || !position.equals("Right") || !position.equals("Center")) {
+            position = "Right";
+            telemetry.addLine("Reverted to default vision");
+            telemetry.update();
+        }
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         vision.stop();
         telemetry.clear();
         telemetry.update();
         telemetry.addLine("1. Strafing");
         telemetry.update();
+        sleep(7000);
 
         //drive.driveleft(13.5, 0.5, false, 0);
 
@@ -76,22 +89,22 @@ public class red_carousel extends FishloAutonomousProgram {
         telemetry.addLine("3. Move arm to position");
         telemetry.update();
         Trajectory to_hub  = drive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20,  -16),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(21,  -16),Math.toRadians(0))
                 .build();
         drive.followTrajectory(to_hub);
 
         sleep(200);
-        drive.turn(Math.toRadians(-10));
+        drive.turn(Math.toRadians(-12));
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(1000);
+        sleep(2000);
         intake.intake(Intake.IntakeState.OFF);
         sleep(100);
-        drive.turn(Math.toRadians(10));
+        drive.turn(Math.toRadians(15));
 
         sleep(100);
         Trajectory to_wall = drive.trajectoryBuilder(to_hub.end(), true)
                 .splineToConstantHeading(new Vector2d(0 ,20), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(-5, 30), Math.toRadians(0),
+                .splineToConstantHeading(new Vector2d(0, 30), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 

@@ -84,16 +84,14 @@ public class VisionPipeline extends OpenCvPipeline {
         CAMERA_WIDTH = input.width();
         CAMERA_HEIGHT = input.height();
         try {
+            input.convertTo(input, -1, 1, -110);
             // Process Image
             Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
             Core.inRange(mat, scalarLowerYCrCb, scalarUpperYCrCb, processed);
             // Core.bitwise_and(input, input, output, processed);
 
-            // Remove Noise
-            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_OPEN, new Mat());
-            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_CLOSE, new Mat());
             // GaussianBlur
-            Imgproc.GaussianBlur(processed, processed, new Size(5.0, 15.0), 0.00);
+            Imgproc.GaussianBlur(processed, processed, new Size(5.0, 5.0), 0.00);
             // Find Contours
             List<MatOfPoint> contours = new ArrayList<>();
             Imgproc.findContours(processed, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);

@@ -55,7 +55,7 @@ public class Drive extends SubSystem {
 
     DcMotor arm;
 
-    SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
+    SampleMecanumDrive mecanumDrive;
 
     DcMotor[] motors = {frontLeft, frontRight, backLeft, backRight};
 
@@ -86,6 +86,7 @@ public class Drive extends SubSystem {
 
     @Override
     public void init() {
+        mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
         frontLeft = robot.hardwareMap.get(DcMotorEx.class, "frontLeft");
         frontRight = robot.hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = robot.hardwareMap.get(DcMotorEx.class, "backLeft");
@@ -94,6 +95,8 @@ public class Drive extends SubSystem {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         arm = robot.hardwareMap.dcMotor.get("arm");
         timer = new ElapsedTime();
         drive = new MecanumDrive(fl, fr, bl, br);
@@ -132,7 +135,6 @@ public class Drive extends SubSystem {
                 bl = backLeftPower / coeff;
                 fr = frontRightPower / coeff;
                 br = backRightPower / coeff;
-
                 break;
 
             case TANK:
