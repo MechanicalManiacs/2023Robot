@@ -17,7 +17,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private VisionPipeline pipeline;
+    private TSEDetectionPipeline pipeline;
 
     private double crThreshHigh = 150;
     private double crThreshLow = 120;
@@ -29,8 +29,8 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 153.6, 0.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 230.4, 102.4);
+    public static Scalar scalarUpperHSV = new Scalar(39, 100, 100);
+    public static Scalar scalarLowerHSV = new Scalar(54, 95, 90);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -49,10 +49,10 @@ public class Vision extends SubSystem {
 
         //OpenCV Pipeline
 
-        pipeline = new VisionPipeline(0.17, 0.005, 0.005, 0.005);
+        pipeline = new TSEDetectionPipeline();
 
-        pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
-        pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
+        pipeline.setHSVUpper(scalarUpperHSV);
+        pipeline.setHSVLower(scalarLowerHSV);
 
         webcam.setPipeline(pipeline);
 
@@ -74,33 +74,7 @@ public class Vision extends SubSystem {
 
     public String getPlacement() {
         String placement = "";
-        if(pipeline.error){
-            robot.telemetry.addData("Exception: ", pipeline.debug.getStackTrace());
-        }
-        // Only use this line of the code when you want to find the lower and upper values, using Ftc Dashboard (https://acmerobotics.github.io/ftc-dashboard/gettingstarted)
-        // testing(pipeline);
-
-        // Watch our YouTube Tutorial for the better explanation
-
-        double rectangleArea = pipeline.getRectArea();
-
-        //Print out the area of the rectangle that is found.
-
-        //Check to see if the rectangle has a large enough area to be a marker.
-        if(rectangleArea > minRectangleArea){
-            //Then check the location of the rectangle to see which barcode it is in.
-            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 360) {
-                placement = "Right";
-            }
-            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 230) {
-                placement = "Left";
-            }
-            else {
-                placement = "Center";
-            }
-        }
-
-        robot.telemetry.update();
+        placement = pipeline.getPos();
         return placement;
     }
 
