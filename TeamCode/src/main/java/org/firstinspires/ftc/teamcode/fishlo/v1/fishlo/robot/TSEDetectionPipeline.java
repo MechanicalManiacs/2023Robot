@@ -63,7 +63,7 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
         Mat morphOutput = new Mat();
 
         //remove noise
-        Imgproc.GaussianBlur(input, blurredImage, new Size(7, 7), 0);
+        Imgproc.GaussianBlur(input, blurredImage, new Size(5, 5), 0);
 
         //convert to HSV
         Imgproc.cvtColor(blurredImage, hsvImage, Imgproc.COLOR_BGR2HSV);
@@ -72,8 +72,8 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
         Core.inRange(hsvImage, HSVLower, HSVUpper, mask);
 
         //morhpological operators
-        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(24, 24));
-        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(12, 12));
+        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(25, 25));
+        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(15, 15));
 
         Imgproc.erode(mask, morphOutput, erodeElement);
         Imgproc.erode(mask, morphOutput, erodeElement);
@@ -88,9 +88,9 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
     }
 
     public Mat getContours(Mat maskedImage, Mat input) {
-        Mat left = maskedImage.submat(LEFT_ROI);
-        Mat center = maskedImage.submat(MIDDLE_ROI);
-        Mat right = maskedImage.submat(RIGHT_ROI);
+        Mat left = maskedImage.submat(new Range(0, 640 / 3), new Range(0, 360));
+        Mat center = maskedImage.submat(new Range(640 / 3, 2 * 640 / 3), new Range(0, 360));
+        Mat right = maskedImage.submat(new Range(2 * 640 / 3, 640), new Range(0, 360));
 
         //find contours
         List<MatOfPoint> contoursleft = new ArrayList<>();

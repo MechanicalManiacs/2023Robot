@@ -36,13 +36,9 @@ public class red_carousel extends FishloAutonomousProgram {
         String placement = "";
         while (!isStarted()) {
             placement = vision.getPlacement();
-            if (placement.equals("Left") || placement.equals("Right") || placement.equals("Center")) {
-                position = placement;
-                telemetry.addData("Position", position);
-            }
-            else if (placement.equals(null)) {
-                telemetry.addLine("not found");
-            }
+            position = placement;
+            telemetry.addData("Position", position);
+            telemetry.update();
         }
         telemetry.update();
 
@@ -52,11 +48,6 @@ public class red_carousel extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-        if (!position.equals("Left") || !position.equals("Right") || !position.equals("Center")) {
-            position = "Right";
-            telemetry.addLine("Reverted to default vision");
-            telemetry.update();
-        }
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         vision.stop();

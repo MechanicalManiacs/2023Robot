@@ -84,9 +84,8 @@ public class VisionPipeline extends OpenCvPipeline {
         CAMERA_WIDTH = input.width();
         CAMERA_HEIGHT = input.height();
         try {
-            input.convertTo(input, -1, 1, -110);
             // Process Image
-            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
             Core.inRange(mat, scalarLowerYCrCb, scalarUpperYCrCb, processed);
             // Core.bitwise_and(input, input, output, processed);
 

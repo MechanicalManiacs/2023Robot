@@ -17,7 +17,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private TSEDetectionPipeline pipeline;
+    private VisionPipeline pipeline;
 
     private double crThreshHigh = 150;
     private double crThreshLow = 120;
@@ -49,10 +49,10 @@ public class Vision extends SubSystem {
 
         //OpenCV Pipeline
 
-        pipeline = new TSEDetectionPipeline();
+        pipeline = new VisionPipeline(0, 0, 0, 0);
 
-        pipeline.setHSVUpper(scalarUpperHSV);
-        pipeline.setHSVLower(scalarLowerHSV);
+        pipeline.configureScalarLower(scalarLowerHSV.val[0], scalarLowerHSV.val[1], scalarLowerHSV.val[2]);
+        pipeline.configureScalarUpper(scalarUpperHSV.val[0], scalarUpperHSV.val[1], scalarUpperHSV.val[2]);
 
         webcam.setPipeline(pipeline);
 
@@ -74,7 +74,16 @@ public class Vision extends SubSystem {
 
     public String getPlacement() {
         String placement = "";
-        placement = pipeline.getPos();
+        if (pipeline.getRectMidpointX() > 360) {
+            placement = "Right";
+
+        }
+        else if (pipeline.getRectMidpointX() < 230) {
+            placement = "Left";
+        }
+        else {
+            placement = "Center";
+        }
         return placement;
     }
 
