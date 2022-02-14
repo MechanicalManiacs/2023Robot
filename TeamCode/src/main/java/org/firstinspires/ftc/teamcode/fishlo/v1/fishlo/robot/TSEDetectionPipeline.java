@@ -76,9 +76,9 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
     }
 
     public Mat getContours(Mat maskedImage, Mat input) {
-        Mat left = maskedImage.submat(new Range(0, input.width() / 3), new Range(0, input.height()));
-        Mat center = maskedImage.submat(new Range(input.width() / 3, 2 * input.width() / 3), new Range(0, input.height()));
-        Mat right = maskedImage.submat(new Range(2 * input.width() / 3, input.width()), new Range(0, input.height()));
+        Mat left = maskedImage.submat(new Range(1, input.rows() / 3), new Range(0, input.cols()));
+        Mat center = maskedImage.submat(new Range(input.rows() / 3, 2 * input.cols() / 3), new Range(0, input.cols()));
+        Mat right = maskedImage.submat(new Range(2 * input.rows() / 3, input.rows()), new Range(0, input.cols()));
 
         //find contours
         List<MatOfPoint> contoursleft = new ArrayList<>();
