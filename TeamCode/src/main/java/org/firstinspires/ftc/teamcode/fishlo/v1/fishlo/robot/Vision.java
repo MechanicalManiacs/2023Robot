@@ -19,6 +19,8 @@ public class Vision extends SubSystem {
     private OpenCvCamera webcam;
     private TSEDetectionPipeline pipeline;
 
+    private TSEDetectionPipeline.BarcodePosition barcodePosition = TSEDetectionPipeline.BarcodePosition.NULL;
+
     private double crThreshHigh = 150;
     private double crThreshLow = 120;
     private double cbThreshHigh = 255;
@@ -29,8 +31,6 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarUpperHSV = new Scalar(39, 100, 100);
-    public static Scalar scalarLowerHSV = new Scalar(54, 95, 90);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -51,15 +51,11 @@ public class Vision extends SubSystem {
 
         pipeline = new TSEDetectionPipeline();
 
-        pipeline.setHSVUpper(scalarUpperHSV);
-        pipeline.setHSVLower(scalarLowerHSV);
-
-        webcam.setPipeline(pipeline);
-
         // Webcam Streaming
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
+                webcam.setPipeline(pipeline);
                 webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
@@ -72,10 +68,13 @@ public class Vision extends SubSystem {
 
     }
 
-    public String getPlacement() {
-        String placement = "";
-        placement = pipeline.getPos();
-        return placement;
+    public TSEDetectionPipeline.BarcodePosition getPlacement() {
+        barcodePosition = pipeline.getBarcodePosition();
+        return barcodePosition;
+    }
+
+    public double getVisionX() {
+        return pipeline.getRectX();
     }
 
     @Override

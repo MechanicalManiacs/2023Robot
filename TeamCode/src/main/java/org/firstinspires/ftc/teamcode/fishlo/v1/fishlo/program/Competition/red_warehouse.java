@@ -12,13 +12,14 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.opmode.TrackingWheelForwardOffsetTuner;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
+import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipeline;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 import java.util.Vector;
 
 @Autonomous
 public class red_warehouse extends FishloAutonomousProgram {
-    String position;
+    TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
 
@@ -31,14 +32,13 @@ public class red_warehouse extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
+        drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
-            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
-                position = vision.getPlacement();
-            }
+            position = vision.getPlacement();
             telemetry.addData("Position", position);
+            telemetry.update();
         }
-        telemetry.update();
     }
 
     // strafe right is positive power, strafe left is negative power!
@@ -57,15 +57,20 @@ public class red_warehouse extends FishloAutonomousProgram {
         Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
 
         switch (position) {
-            case "Left":
+            case LEFT:
                 intake.armToLevel(0, false, 0);
                 break;
-            case "Center":
+            case CENTER:
                 intake.armToLevel(1, false, 0);
                 break;
-            case "Right":
+            case RIGHT:
                 intake.armToLevel(2, false, 0);
                 break;
+            case NULL:
+                int random = (int)(Math.random()*3);
+                intake.armToLevel(random, false, 0);
+                telemetry.addData("Default Postion", random);
+                telemetry.update();
         }
 
         Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
