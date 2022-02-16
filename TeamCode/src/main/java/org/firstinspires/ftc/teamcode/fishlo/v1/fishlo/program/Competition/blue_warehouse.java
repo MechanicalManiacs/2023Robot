@@ -12,13 +12,14 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.opmode.TrackingWheelForwardOffsetTuner;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
+import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipeline;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 import java.util.Vector;
 
 @Autonomous
 public class blue_warehouse extends FishloAutonomousProgram {
-    String position;
+    TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
 
@@ -31,9 +32,10 @@ public class blue_warehouse extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
+        drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
         while (!isStarted()) {
-            if (vision.getPlacement().equals("Left") || vision.getPlacement().equals("Right") || vision.getPlacement().equals("Center")) {
+            if (vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.LEFT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.RIGHT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.CENTER) {
                 position = vision.getPlacement();
             }
             telemetry.addData("Position", position);
@@ -58,13 +60,13 @@ public class blue_warehouse extends FishloAutonomousProgram {
         Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
 
         switch (position) {
-            case "Left":
+            case LEFT:
                 intake.armToLevel(0, false, 0);
                 break;
-            case "Center":
+            case CENTER:
                 intake.armToLevel(1, false, 0);
                 break;
-            case "Right":
+            case RIGHT:
                 intake.armToLevel(2, false, 0);
                 break;
         }

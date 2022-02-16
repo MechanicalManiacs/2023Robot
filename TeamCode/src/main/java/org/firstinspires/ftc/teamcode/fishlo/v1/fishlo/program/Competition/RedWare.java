@@ -3,24 +3,28 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.google.ftcresearch.tfod.tracking.ObjectTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.internal.vuforia.VuforiaException;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.opmode.TrackingWheelForwardOffsetTuner;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousProgram;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipeline;
 import org.firstinspires.ftc.teamcode.robot.Robot;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-import java.util.Objects;
+import java.util.Vector;
 
 @Autonomous
-public class red_carousel extends FishloAutonomousProgram {
-
+public class RedWare extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
+    SampleMecanumDrive mdrive;
+    Trajectory to_hub;
+    Trajectory ware;
 
     @Override
     protected Robot buildRobot() {
@@ -29,6 +33,9 @@ public class red_carousel extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
+        mdrive = new SampleMecanumDrive(hardwareMap);
+        mdrive.setPoseEstimate(new Pose2d());
+        Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         drive.initGyro();
@@ -38,27 +45,28 @@ public class red_carousel extends FishloAutonomousProgram {
             telemetry.addData("Position", position);
             telemetry.update();
         }
-
+        to_hub = mdrive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(20, 24), Math.toRadians(0))
+                .build();
+        Pose2d hubpose = new Pose2d(0, 0, Math.toRadians(0));
+        ware = mdrive.trajectoryBuilder(hubpose)
+                .splineTo(new Vector2d(7,-29, Math.toRadians(180)))
+                .build();
     }
+
     // strafe right is positive power, strafe left is negative power!
 //measurements subject to change
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         vision.stop();
         telemetry.clear();
         telemetry.update();
         telemetry.addLine("1. Strafing");
         telemetry.update();
-        sleep(7000);
-
-        //drive.driveleft(13.5, 0.5, false, 0);
 
         //sleep(200);
-        drive.setPoseEstimate(new Pose2d());
-        Pose2d start_pose = new Pose2d(0,0, Math.toRadians(0));
+
 
         switch (position) {
             case LEFT:
@@ -77,39 +85,12 @@ public class red_carousel extends FishloAutonomousProgram {
                 telemetry.update();
         }
 
-        telemetry.addLine("2. Squaring up with wall");
-        telemetry.update();
-        telemetry.addLine("3. Move arm to position");
-        telemetry.update();
-        Trajectory to_wall = drive.trajectoryBuilder(start_pose, true)
-                .splineToConstantHeading(new Vector2d(0 ,20), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(0, 30), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
-                .build();
-        drive.followTrajectory(to_wall);
-
-        sleep(200);
-        drive.turn(Math.toRadians(-12));
+        mdrive.followTrajectory(to_hub);
         intake.intake(Intake.IntakeState.REVERSE);
-        sleep(2000);
+        sleep(500);
         intake.intake(Intake.IntakeState.OFF);
-        sleep(100);
-        drive.turn(Math.toRadians(15));
 
-        sleep(100);
-        Trajectory to_hub  = drive.trajectoryBuilder(to_wall.end())
-                .splineToConstantHeading(new Vector2d(21,  -16),Math.toRadians(0))
-                .build();
-        drive.followTrajectory(to_hub);
-        sleep(100);
-        intake.duck.setPower(-0.4);
-        sleep(5000);
-        Trajectory Park = drive.trajectoryBuilder(to_hub.end())
-                .splineToConstantHeading(new Vector2d(20,40), Math.toRadians(0))
-                .build();
-        drive.followTrajectory(Park);
 
 
 
@@ -124,5 +105,6 @@ public class red_carousel extends FishloAutonomousProgram {
 
 
     }
-}
 
+
+}

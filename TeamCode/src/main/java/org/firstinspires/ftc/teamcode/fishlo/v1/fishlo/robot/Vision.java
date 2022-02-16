@@ -17,7 +17,9 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private VisionPipeline pipeline;
+    private TSEDetectionPipeline pipeline;
+
+    private TSEDetectionPipeline.BarcodePosition barcodePosition = TSEDetectionPipeline.BarcodePosition.NULL;
 
     private double crThreshHigh = 150;
     private double crThreshLow = 120;
@@ -29,8 +31,6 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarUpperHSV = new Scalar(39, 100, 100);
-    public static Scalar scalarLowerHSV = new Scalar(54, 95, 90);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -49,17 +49,13 @@ public class Vision extends SubSystem {
 
         //OpenCV Pipeline
 
-        pipeline = new VisionPipeline(0, 0, 0, 0);
-
-        pipeline.configureScalarLower(scalarLowerHSV.val[0], scalarLowerHSV.val[1], scalarLowerHSV.val[2]);
-        pipeline.configureScalarUpper(scalarUpperHSV.val[0], scalarUpperHSV.val[1], scalarUpperHSV.val[2]);
-
-        webcam.setPipeline(pipeline);
+        pipeline = new TSEDetectionPipeline();
 
         // Webcam Streaming
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
+                webcam.setPipeline(pipeline);
                 webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
@@ -72,19 +68,13 @@ public class Vision extends SubSystem {
 
     }
 
-    public String getPlacement() {
-        String placement = "";
-        if (pipeline.getRectMidpointX() > 360) {
-            placement = "Right";
+    public TSEDetectionPipeline.BarcodePosition getPlacement() {
+        barcodePosition = pipeline.getBarcodePosition();
+        return barcodePosition;
+    }
 
-        }
-        else if (pipeline.getRectMidpointX() < 230) {
-            placement = "Left";
-        }
-        else {
-            placement = "Center";
-        }
-        return placement;
+    public double getVisionX() {
+        return pipeline.getRectX();
     }
 
     @Override

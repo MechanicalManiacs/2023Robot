@@ -4,7 +4,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Range;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -16,113 +15,101 @@ import java.util.List;
 
 public class TSEDetectionPipeline extends OpenCvPipeline {
 
-    static final Rect LEFT_ROI = new Rect(
-            new Point( 0, 0 ),
-            new Point( 426, 720 ) );
-    static final Rect MIDDLE_ROI = new Rect(
-            new Point( 426, 0 ),
-            new Point( 852, 720 ) );
-    static final Rect RIGHT_ROI = new Rect(
-            new Point( 852, 0 ),
-            new Point( 1278, 720 ) );
+    double hue = 0;
+    double sens = 0;
 
-    public Scalar HSVUpper = new Scalar(0, 0, 0);
-    public Scalar HSVLower = new Scalar(0, 0, 0);
+    double leftThreshold = 233;
+    double rightThreshold = 383;
 
-    public String getPos() {
-        return pos;
-    }
+    List<MatOfPoint> contours = new ArrayList<>();
 
-    private String pos;
+    Mat blur = new Mat();
+    Mat hsv = new Mat();
+    Mat single = new Mat();
+    Mat hierarchy = new Mat();
+    Mat output = new Mat();
 
-    public Scalar getHSVUpper() {
-        return HSVUpper;
-    }
+    Rect largestRect;
 
-    public void setHSVUpper(Scalar HSVUpper) {
-        this.HSVUpper = HSVUpper;
-    }
+    public BarcodePosition barcodePosition = BarcodePosition.NULL;
 
-    public Scalar getHSVLower() {
-        return HSVLower;
-    }
-
-    public void setHSVLower(Scalar HSVLower) {
-        this.HSVLower = HSVLower;
-    }
-
-    public void setPos(String pos) {
-        this.pos = pos;
+    public enum BarcodePosition {
+        LEFT,
+        RIGHT,
+        CENTER,
+        NULL
     }
 
     @Override
     public Mat processFrame(Mat input) {
-        Mat blurredImage = new Mat();
-        Mat hsvImage = new Mat();
-        Mat mask = new Mat();
-        Mat morphOutput = new Mat();
+        input.copyTo(output);
 
-        //remove noise
-        Imgproc.GaussianBlur(input, blurredImage, new Size(5, 5), 0);
+        //cutting off top of the image so that it only detect capstone
+        output = output.submat(output.rows() / 3, output.rows()-1, 0, output.cols()-1);
 
-        //convert to HSV
-        Imgproc.cvtColor(blurredImage, hsvImage, Imgproc.COLOR_BGR2HSV);
+        //Blur
+        Imgproc.GaussianBlur(output, blur, new Size(5, 5), 0);
 
-        //threshold image to HSV values
-        Core.inRange(hsvImage, HSVLower, HSVUpper, mask);
+        //Convert to HSV
+        Imgproc.cvtColor(blur, hsv, Imgproc.COLOR_RGB2HSV);
 
-        //morhpological operators
-        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(25, 25));
-        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(15, 15));
+        contours.clear();
 
-        Imgproc.erode(mask, morphOutput, erodeElement);
-        Imgproc.erode(mask, morphOutput, erodeElement);
+        hue = 50;
+        sens = 30;
 
-        Imgproc.dilate(mask, morphOutput, dilateElement);
-        Imgproc.dilate(mask, morphOutput, dilateElement);
+        //Find contours, (orange)
+        Scalar lowHSV = new Scalar((hue/2)-sens, 60 , 85);
+        Scalar highHSV = new Scalar(hue+sens, 255, 255);
+        Core.inRange(hsv, lowHSV, highHSV, single);
+        Imgproc.findContours(single, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        input = getContours(mask, input);
+        //checks if contours are found
+        if (contours.size() > 0) {
+            //finds biggest contour
+            double max = 0;
+            int ind = 0;
+            for (int i = 0; i < contours.size(); i++) {
+                double area = Imgproc.contourArea(contours.get(i));
+                if (area > max) {
+                    ind = i;
+                    max = area;
+                }
+            }
+            //creates rectangle from the contour and gets the x value
+            largestRect = Imgproc.boundingRect(contours.get(ind));
+            Scalar boxColor = new Scalar(0, 255, 0);
+            Imgproc.rectangle(output, largestRect, boxColor, 3, 8, 0);
+            Imgproc.putText(output, "X: " + getRectX() + " Y: " + getRectY(), new Point(5, output.height() - 5), 0, 0.6, new Scalar(255, 255, 255));
+            Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
 
-        return input;
-
-    }
-
-    public Mat getContours(Mat maskedImage, Mat input) {
-        Mat left = maskedImage.submat(new Range(0, 640 / 3), new Range(0, 360));
-        Mat center = maskedImage.submat(new Range(640 / 3, 2 * 640 / 3), new Range(0, 360));
-        Mat right = maskedImage.submat(new Range(2 * 640 / 3, 640), new Range(0, 360));
-
-        //find contours
-        List<MatOfPoint> contoursleft = new ArrayList<>();
-        List<MatOfPoint> contoursright = new ArrayList<>();
-        List<MatOfPoint> contourscenter = new ArrayList<>();
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchy = new Mat();
-
-        Imgproc.findContours(left, contoursleft, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.findContours(center, contourscenter, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
-        Imgproc.findContours(right, contoursright, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        if (contoursleft.isEmpty() && contourscenter.isEmpty() && !contoursright.isEmpty()) {
-            contours = contoursright;
-            pos = "Right";
-        }
-        else if (!contoursleft.isEmpty() && contourscenter.isEmpty() && contoursright.isEmpty()) {
-            contours = contoursleft;
-            pos = "Left";
-        }
-        else if (contoursleft.isEmpty() && !contourscenter.isEmpty() && contoursright.isEmpty()) {
-            contours = contourscenter;
-            pos = "Center";
-        }
-
-        if (hierarchy.size().height > 0 && hierarchy.size().width > 0) {
-            for (int i = 0; i >= 0; i = (int) hierarchy.get(0, i)[0]) {
-                Imgproc.drawContours(input, contours, i, new Scalar(0, 255, 0));
+            //determine barcode position
+            if (largestRect.x > rightThreshold) {
+                barcodePosition = BarcodePosition.RIGHT;
+            }
+            else if (largestRect.x < leftThreshold) {
+                barcodePosition = BarcodePosition.LEFT;
+            }
+            else if (largestRect.x > leftThreshold && largestRect.x < rightThreshold) {
+                barcodePosition = BarcodePosition.CENTER;
+            }
+            else {
+                barcodePosition = BarcodePosition.NULL;
             }
         }
 
-        return input;
+        return output;
     }
 
+    public BarcodePosition getBarcodePosition() {
+        return  barcodePosition;
+    }
+
+    public int getRectX() {
+        return largestRect.x;
+    }
+
+    public int getRectY() {
+        return largestRect.y;
+    }
 }
