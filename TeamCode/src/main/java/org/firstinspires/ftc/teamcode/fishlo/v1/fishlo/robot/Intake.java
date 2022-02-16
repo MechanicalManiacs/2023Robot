@@ -6,14 +6,21 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.gamepad.TriggerReader;
+import com.arcrobotics.ftclib.hardware.SensorDistance;
+import com.arcrobotics.ftclib.hardware.SensorDistanceEx;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.sun.tools.javac.tree.DCTree;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
@@ -26,6 +33,9 @@ public class Intake extends SubSystem {
     public DcMotor intake;
     public DcMotor duck;
     public DcMotor duck2;
+
+    public DistanceSensor distance;
+
     int count = 0;
 
     public CRServo capstoneClaw;
@@ -63,6 +73,12 @@ public class Intake extends SubSystem {
         duck2 = robot.hardwareMap.dcMotor.get("carousel2");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+        distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+    }
+
+    public enum BlockIn {
+        IN,
+        NOT_IN
     }
 
     @Override
@@ -78,15 +94,6 @@ public class Intake extends SubSystem {
         }
         if (robot.gamepad2.dpad_down) {
             coeff = 1;
-        }
-        if (robot.gamepad2.dpad_left) {
-            armToLevel(2, false, 0);
-        }
-        if (robot.gamepad2.dpad_right) {
-            armToLevel(0, false, 0);
-        }
-        else {
-            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
         double increment = 0.1;
         if (robot.gamepad2.right_bumper) {
@@ -112,15 +119,14 @@ public class Intake extends SubSystem {
         if (robot.gamepad2.right_trigger >= 0.5) {
             intake.setPower(1);
         }
-        else if (robot.gamepad2.left_trigger >= 0.5) {
+        if (robot.gamepad2.left_trigger >= 0.5) {
             intake.setPower(-0.5);
         }
-        else if (robot.gamepad2.left_bumper) {
+        if (robot.gamepad2.left_bumper) {
             intake.setPower(-0.3);
         }
-        else {
-            intake(IntakeState.OFF);
-        }
+        intake(IntakeState.OFF);
+        robot.telemetry.addData("Block Status", isBlockIn());
     }
 
     public enum IntakeState {
@@ -206,5 +212,12 @@ public class Intake extends SubSystem {
     @Override
     public void stop() {
         arm.setPower(0);
+    }
+
+    public BlockIn isBlockIn() {
+        BlockIn blockIn = BlockIn.NOT_IN;
+        if (distance.getDistance(DistanceUnit.INCH) <= 2.5) blockIn = BlockIn.IN;
+        else blockIn = BlockIn.NOT_IN;
+        return blockIn;
     }
 }

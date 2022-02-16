@@ -171,17 +171,17 @@ public class Drive extends SubSystem {
         drive(fl, bl, fr, br);
         if (telemetryEnabled) {
             robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());
-            robot.telemetry.addLine("Drive - Dat - Motors")
-                    .addData("frontLeft", fl)
-                    .addData("backLeft", bl)
-                    .addData("frontRight", fr)
-                    .addData("backRight", br);
-            robot.telemetry.addLine("Drive - Dat - Inputs")
-                    .addData("LeftY", -robot.gamepad1.left_stick_y)
-                    .addData("RightY", -robot.gamepad1.right_stick_y)
-                    .addData("LeftX", robot.gamepad1.left_stick_x)
-                    .addData("RightX", robot.gamepad1.right_stick_x);
-            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
+//            robot.telemetry.addLine("Drive - Dat - Motors")
+//                    .addData("frontLeft", fl)
+//                    .addData("backLeft", bl)
+//                    .addData("frontRight", fr)
+//                    .addData("backRight", br);
+//            robot.telemetry.addLine("Drive - Dat - Inputs")
+//                    .addData("LeftY", -robot.gamepad1.left_stick_y)
+//                    .addData("RightY", -robot.gamepad1.right_stick_y)
+//                    .addData("LeftX", robot.gamepad1.left_stick_x)
+//                    .addData("RightX", robot.gamepad1.right_stick_x);
+//            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
         }
     }
 

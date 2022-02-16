@@ -31,6 +31,8 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
 
     Rect largestRect;
 
+    private final Object sync = new Object();
+
     public BarcodePosition barcodePosition = BarcodePosition.NULL;
 
     public enum BarcodePosition {
@@ -65,36 +67,35 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
         Imgproc.findContours(single, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
         //checks if contours are found
-        if (contours.size() > 0) {
-            //finds biggest contour
-            double max = 0;
-            int ind = 0;
-            for (int i = 0; i < contours.size(); i++) {
-                double area = Imgproc.contourArea(contours.get(i));
-                if (area > max) {
-                    ind = i;
-                    max = area;
+        synchronized (sync) {
+            if (contours.size() > 0) {
+                //finds biggest contour
+                double max = 0;
+                int ind = 0;
+                for (int i = 0; i < contours.size(); i++) {
+                    double area = Imgproc.contourArea(contours.get(i));
+                    if (area > max) {
+                        ind = i;
+                        max = area;
+                    }
                 }
-            }
-            //creates rectangle from the contour and gets the x value
-            largestRect = Imgproc.boundingRect(contours.get(ind));
-            Scalar boxColor = new Scalar(0, 255, 0);
-            Imgproc.rectangle(output, largestRect, boxColor, 3, 8, 0);
-            Imgproc.putText(output, "X: " + getRectX() + " Y: " + getRectY(), new Point(5, output.height() - 5), 0, 0.6, new Scalar(255, 255, 255));
-            Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
+                //creates rectangle from the contour and gets the x value
+                largestRect = Imgproc.boundingRect(contours.get(ind));
+                Scalar boxColor = new Scalar(0, 255, 0);
+                Imgproc.rectangle(output, largestRect, boxColor, 3, 8, 0);
+                Imgproc.putText(output, "X: " + getRectX() + " Y: " + getRectY(), new Point(5, output.height() - 5), 0, 0.6, new Scalar(255, 255, 255));
+                Imgproc.drawContours(output, contours, -1, new Scalar(255, 0, 0));
 
-            //determine barcode position
-            if (largestRect.x > rightThreshold) {
-                barcodePosition = BarcodePosition.RIGHT;
-            }
-            else if (largestRect.x < leftThreshold) {
-                barcodePosition = BarcodePosition.LEFT;
-            }
-            else if (largestRect.x > leftThreshold && largestRect.x < rightThreshold) {
-                barcodePosition = BarcodePosition.CENTER;
-            }
-            else {
-                barcodePosition = BarcodePosition.NULL;
+                //determine barcode position
+                if (largestRect.x > rightThreshold) {
+                    barcodePosition = BarcodePosition.RIGHT;
+                } else if (largestRect.x < leftThreshold) {
+                    barcodePosition = BarcodePosition.LEFT;
+                } else if (largestRect.x > leftThreshold && largestRect.x < rightThreshold) {
+                    barcodePosition = BarcodePosition.CENTER;
+                } else {
+                    barcodePosition = BarcodePosition.NULL;
+                }
             }
         }
 
@@ -102,14 +103,20 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
     }
 
     public BarcodePosition getBarcodePosition() {
-        return  barcodePosition;
+        synchronized (sync) {
+            return barcodePosition;
+        }
     }
 
     public int getRectX() {
-        return largestRect.x;
+        synchronized (sync) {
+            return largestRect.x;
+        }
     }
 
     public int getRectY() {
-        return largestRect.y;
+        synchronized (sync) {
+            return largestRect.y;
+        }
     }
 }
