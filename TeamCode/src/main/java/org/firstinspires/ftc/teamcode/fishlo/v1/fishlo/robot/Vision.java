@@ -61,7 +61,7 @@ public class Vision extends SubSystem {
 
             @Override
             public void onError(int errorCode) {
-
+                System.exit(0);
             }
         });
 

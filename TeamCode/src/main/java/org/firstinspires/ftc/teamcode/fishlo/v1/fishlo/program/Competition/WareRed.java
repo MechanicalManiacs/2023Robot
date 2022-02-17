@@ -14,19 +14,14 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousP
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipeline;
 import org.firstinspires.ftc.teamcode.robot.Robot;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.opencv.core.Mat;
 
 import java.util.Vector;
 
 @Autonomous
-public class RedWare extends FishloAutonomousProgram {
+public class WareRed extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
-    Trajectory to_hub;
-    Trajectory ware;
-    Trajectory getBlock;
 
     @Override
     protected Robot buildRobot() {
@@ -35,9 +30,6 @@ public class RedWare extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
-        mdrive = new SampleMecanumDrive(hardwareMap);
-        mdrive.setPoseEstimate(new Pose2d());
-        Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         drive.initGyro();
@@ -47,24 +39,6 @@ public class RedWare extends FishloAutonomousProgram {
             telemetry.addData("Position", position);
             telemetry.update();
         }
-        to_hub = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, 24), Math.toRadians(0))
-                .build();
-        telemetry.addLine("to hub built");
-        Pose2d hubPose = new Pose2d(0, 0, Math.toRadians(0));
-        ware = mdrive.trajectoryBuilder(hubPose)
-                .splineTo(new Vector2d(7,-29), Math.toRadians(-180))
-                .build();
-        telemetry.addLine("ware built");
-        Pose2d blockPose = new Pose2d(0, 0, Math.toRadians(0));
-        getBlock = mdrive.trajectoryBuilder(blockPose)
-                .addDisplacementMarker(() -> {
-                    intake.intake(Intake.IntakeState.ON);
-
-                })
-                .splineTo(new Vector2d(0,-39), Math.toRadians(-180))
-                .build();
-        telemetry.addLine("get block built");
     }
 
     // strafe right is positive power, strafe left is negative power!
@@ -77,51 +51,57 @@ public class RedWare extends FishloAutonomousProgram {
         telemetry.update();
         telemetry.addLine("1. Strafing");
         telemetry.update();
-
+        mdrive = new SampleMecanumDrive(hardwareMap);
         //sleep(200);
+        mdrive.setPoseEstimate(new Pose2d());
+        Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
 
-
-//        switch (position) {
-//            case LEFT:
-//                intake.armToLevel(0, false, 0);
-//                break;
-//            case CENTER:
-//                intake.armToLevel(1, false, 0);
-//                break;
-//            case RIGHT:
-//                intake.armToLevel(2, false, 0);
-//                break;
-//            case NULL:
-//                int random = (int)(Math.random()*3);
-//                intake.armToLevel(random, false, 0);
-//                telemetry.addData("Default Postion", random);
-//                telemetry.update();
-        intake.armToLevel(2, false, 0);
+        switch (position) {
+            case LEFT:
+                intake.armToLevel(0, false, 0);
+                break;
+            case CENTER:
+                intake.armToLevel(1, false, 0);
+                break;
+            case RIGHT:
+                intake.armToLevel(2, false, 0);
+                break;
+            case NULL:
+                int random = (int)(Math.random()*3);
+                intake.armToLevel(random, false, 0);
+                telemetry.addData("Default Postion", random);
+                telemetry.update();
+        }
+        Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(20, 24), Math.toRadians(0))
+                .build();
         mdrive.followTrajectory(to_hub);
+        intake.armToLevel(2, false, 0);
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
+        Trajectory ware = mdrive.trajectoryBuilder(to_hub.end())
+                .splineTo(new Vector2d(0,-5), Math.toRadians(0))
+                .build();
         mdrive.followTrajectory(ware);
+        Trajectory getBlock = mdrive.trajectoryBuilder(ware.end())
+                .splineTo(new Vector2d(0,-30), Math.toRadians(0))
+                .addDisplacementMarker(() -> {
+                    intake.intake(Intake.IntakeState.ON);
 
+                })
+                .splineTo(new Vector2d(0, -40), Math.toRadians(-90),
+                        SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .build();
         mdrive.followTrajectory(getBlock);
-
-        }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
     }
 
+
+}
 
 

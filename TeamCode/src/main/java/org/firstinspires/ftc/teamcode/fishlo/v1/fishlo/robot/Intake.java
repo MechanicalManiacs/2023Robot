@@ -34,6 +34,8 @@ public class Intake extends SubSystem {
     public DcMotor duck;
     public DcMotor duck2;
 
+    public ColorSensor color;
+
     public DistanceSensor distance;
 
     int count = 0;
@@ -74,6 +76,7 @@ public class Intake extends SubSystem {
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
         distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+        color = robot.hardwareMap.colorSensor.get("color");
     }
 
     public enum BlockIn {
@@ -127,6 +130,12 @@ public class Intake extends SubSystem {
         }
         intake(IntakeState.OFF);
         robot.telemetry.addData("Block Status", isBlockIn());
+        if (isBlockIn() == BlockIn.IN) {
+            color.enableLed(true);
+        }
+        else {
+            color.enableLed(false);
+        }
     }
 
     public enum IntakeState {
@@ -175,7 +184,7 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-0.5);
+            intake.setPower(-1);
         }
     }
 
