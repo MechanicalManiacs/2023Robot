@@ -101,34 +101,24 @@ public class WareRed extends FishloAutonomousProgram {
         Pose2d lpose= new Pose2d(go_back.end().getX(), go_back.end().getY(), Math.toRadians(-90));
         Trajectory ware = mdrive.trajectoryBuilder(lpose)
                 .splineToConstantHeading(new Vector2d(-15,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -20), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, -30), Math.toRadians(-90))
                 .build();
         telemetry.addLine("i stg");
         telemetry.update();
         mdrive.followTrajectory(ware);
         telemetry.addLine("i stg part 2");
         telemetry.update();
-        intake.intake(Intake.IntakeState.ON);
-        Pose2d warePose = new Pose2d(ware.end().getX(), ware.end().getY(), ware.end().getHeading());
-        Trajectory work = mdrive.trajectoryBuilder(warePose)
-                .splineToConstantHeading(new Vector2d(-15, -35), Math.toRadians(-89),
-                        SampleMecanumDrive.getVelocityConstraint(6, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .splineToConstantHeading(new Vector2d(-15, 18), Math.toRadians(-90))
-                .build();
-        telemetry.addLine("built the alt");
-        telemetry.update();
-        mdrive.followTrajectory(work);
-
-
-        Trajectory just_work = mdrive.trajectoryBuilder(ware.end())
-                //sa
-                .build();
-        telemetry.addLine("about to start new trajectory");
-        telemetry.update();
-        mdrive.followTrajectory(just_work);
-        telemetry.addLine("finished trajectory");
-        telemetry.update();
+//        intake.intake(Intake.IntakeState.ON);
+//        Pose2d warePose = new Pose2d(ware.end().getX(), ware.end().getY(), ware.end().getHeading());
+//        Trajectory work = mdrive.trajectoryBuilder(warePose)
+//                .splineToConstantHeading(new Vector2d(-15, -35), Math.toRadians(-89),
+//                        SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+//                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+//                .splineToConstantHeading(new Vector2d(-15, 18), Math.toRadians(-90))
+//                .build();
+//        telemetry.addLine("built the alt");
+//        telemetry.update();
+//        mdrive.followTrajectory(work);
 //        Trajectory place_block = mdrive.trajectoryBuilder(ware.end())
 //                .strafeLeft(20)
 //                .build();

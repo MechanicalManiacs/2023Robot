@@ -17,7 +17,9 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.util.Position;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -30,21 +32,19 @@ import java.time.OffsetDateTime;
 public class Intake extends SubSystem {
 
     public DcMotor arm;
-    public DcMotor intake;
+    public static DcMotor intake;
     public DcMotor duck;
 
     public DistanceSensor distance;
 
     int count = 0;
 
-//    public CRServo capstoneClaw;
+    public CRServo capstoneClaw;
 
     double coeff = 1;
 
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
-
-    CRServo capstoneClaw;
 
     double[] position = {0, 0.5};
     int positionIndex = 0;
@@ -83,12 +83,8 @@ public class Intake extends SubSystem {
 
     @Override
     public void handle() {
-        count++;
-        if (count == 1) {
-            duck.setPower(0);
-        }
-        arm.setPower(-robot.gamepad2.left_stick_y/coeff);
         capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
+        arm.setPower(Range.clip(-robot.gamepad2.left_stick_y, -0.9, 0.9));
         if (robot.gamepad2.dpad_up) {
             coeff = 1.5;
         }
@@ -119,13 +115,14 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         if (robot.gamepad2.left_trigger >= 0.5) {
-            intake.setPower(-0.5);
+            if (Drive.driveType == Drive.DriveControls.TANK) intake.setPower(-0.5);
+            else if (Drive.driveType == Drive.DriveControls.ARCADE) intake(IntakeState.REVERSE);
         }
         else {
             intake(IntakeState.OFF);
         }
         if (robot.gamepad2.left_bumper) {
-            intake.setPower(-0.3);
+            intake.setPower(-0.4);
         }
         else {
             intake(IntakeState.OFF);
@@ -180,6 +177,10 @@ public class Intake extends SubSystem {
         else if (state == IntakeState.REVERSE) {
             intake.setPower(-1);
         }
+    }
+
+    public static void driveOuttake() {
+        intake.setPower(-0.6);
     }
 
     public void spinCarousel(String pos){

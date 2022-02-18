@@ -1,6 +1,7 @@
 
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -14,7 +15,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvWebcam;
-
+@Config
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
@@ -100,6 +101,6 @@ public class Vision extends SubSystem {
 
     @Override
     public void stop() {
-        webcam.closeCameraDevice();
+        webcam.stopStreaming();
     }
 }

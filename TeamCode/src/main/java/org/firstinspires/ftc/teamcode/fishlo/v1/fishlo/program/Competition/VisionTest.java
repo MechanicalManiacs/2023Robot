@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.intel.realsense.librealsense.Pipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -15,14 +16,13 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous
+@Config
 public class VisionTest extends FishloAutonomousProgram {
 
     TSEDetectionPipeline.BarcodePosition placement;
     //VisionPipeline mainPipeline;
     TSEDetectionPipeline mainPipeline;
     OpenCvCamera cam;
-    Scalar low = VisionPipeline.scalarLowerHSV;
-    Scalar high = VisionPipeline.scalarUpperHSV;
 
     @Override
     protected Robot buildRobot() {

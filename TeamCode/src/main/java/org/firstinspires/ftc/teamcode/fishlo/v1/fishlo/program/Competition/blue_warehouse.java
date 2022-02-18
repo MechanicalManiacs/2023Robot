@@ -32,15 +32,15 @@ public class blue_warehouse extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
-        drive.initGyro();
+//        drive.initGyro();
         telemetry.addLine("Dectecting Position of Barcode");
-        while (!isStarted()) {
-            if (vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.LEFT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.RIGHT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.CENTER) {
-                position = vision.getPlacement();
-            }
-            telemetry.addData("Position", position);
-        }
-        telemetry.update();
+//        while (!isStarted()) {
+//            if (vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.LEFT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.RIGHT || vision.getPlacement() == TSEDetectionPipeline.BarcodePosition.CENTER) {
+//                position = vision.getPlacement();
+//            }
+//            telemetry.addData("Position", position);
+//        }
+//        telemetry.update();
 
     }
 
@@ -49,7 +49,7 @@ public class blue_warehouse extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-        vision.stop();
+//        vision.stop();
         telemetry.clear();
         telemetry.update();
         telemetry.addLine("1. Strafing");
@@ -58,6 +58,7 @@ public class blue_warehouse extends FishloAutonomousProgram {
         //sleep(200);
         mdrive.setPoseEstimate(new Pose2d());
         Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
+        position = TSEDetectionPipeline.BarcodePosition.CENTER;
 
         switch (position) {
             case LEFT:
