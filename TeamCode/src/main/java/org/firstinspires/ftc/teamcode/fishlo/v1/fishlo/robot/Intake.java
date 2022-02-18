@@ -44,6 +44,8 @@ public class Intake extends SubSystem {
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime duckTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
 
+    CRServo capstoneClaw;
+
     double[] position = {0, 0.5};
     int positionIndex = 0;
 
@@ -70,7 +72,7 @@ public class Intake extends SubSystem {
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
         distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
     }
 
@@ -86,7 +88,7 @@ public class Intake extends SubSystem {
             duck.setPower(0);
         }
         arm.setPower(-robot.gamepad2.left_stick_y/coeff);
-//        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
+        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
         if (robot.gamepad2.dpad_up) {
             coeff = 1.5;
         }
