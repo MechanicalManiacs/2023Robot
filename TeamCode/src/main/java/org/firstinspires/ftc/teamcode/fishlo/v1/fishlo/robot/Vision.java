@@ -17,7 +17,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private VisionPipeline pipeline2;
+    private TSEDetectionPipeline pipeline2;
 
     private TSEDetectionPipeline.BarcodePosition barcodePosition = TSEDetectionPipeline.BarcodePosition.NULL;
 
@@ -53,10 +53,7 @@ public class Vision extends SubSystem {
 
         //OpenCV Pipeline
 
-        pipeline2 = new VisionPipeline(0, 0, 0, 0);
-
-        pipeline2.configureScalarLower(VisionPipeline.scalarLowerHSV.val[0], VisionPipeline.scalarLowerHSV.val[1], VisionPipeline.scalarLowerHSV.val[2]);
-        pipeline2.configureScalarUpper(VisionPipeline.scalarUpperHSV.val[0], VisionPipeline.scalarUpperHSV.val[0], VisionPipeline.scalarUpperHSV.val[0]);
+        pipeline2 = new TSEDetectionPipeline();
 
         // Webcam Streaming
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -76,20 +73,11 @@ public class Vision extends SubSystem {
     }
 
     public TSEDetectionPipeline.BarcodePosition getPlacement() {
-        if (pipeline2.getRectMidpointX() > TSEDetectionPipeline.rightThreshold) {
-            barcodePosition = TSEDetectionPipeline.BarcodePosition.RIGHT;
-        }
-        else if (pipeline2.getRectMidpointX() > TSEDetectionPipeline.leftThreshold) {
-            barcodePosition = TSEDetectionPipeline.BarcodePosition.LEFT;
-        }
-        else {
-            barcodePosition = TSEDetectionPipeline.BarcodePosition.CENTER;
-        }
-        return barcodePosition;
+        return pipeline2.getBarcodePosition();
     }
 
     public double getVisionX() {
-        return pipeline2.getRectMidpointX();
+        return pipeline2.getRectX();
     }
 
     @Override

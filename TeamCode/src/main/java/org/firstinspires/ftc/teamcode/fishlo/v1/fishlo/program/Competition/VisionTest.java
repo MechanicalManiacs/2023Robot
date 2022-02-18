@@ -18,7 +18,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 public class VisionTest extends FishloAutonomousProgram {
 
     TSEDetectionPipeline.BarcodePosition placement;
-    VisionPipeline mainPipeline;
+    //VisionPipeline mainPipeline;
+    TSEDetectionPipeline mainPipeline;
     OpenCvCamera cam;
     Scalar low = VisionPipeline.scalarLowerHSV;
     Scalar high = VisionPipeline.scalarUpperHSV;
@@ -39,10 +40,12 @@ public class VisionTest extends FishloAutonomousProgram {
             cam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    mainPipeline = new VisionPipeline(0, 0, 0, 0);
+                    //mainPipeline = new VisionPipeline(0, 0, 0, 0);
+                    mainPipeline = new TSEDetectionPipeline();
                     cam.setPipeline(mainPipeline);
-                    mainPipeline.configureScalarLower(low.val[0], low.val[1], low.val[2]);
-                    mainPipeline.configureScalarLower(high.val[0], high.val[1], high.val[2]);
+//                    mainPipeline.configureScalarLower(low.val[0], low.val[1], low.val[2]);
+//                    mainPipeline.configureScalarLower(high.val[0], high.val[1], high.val[2]);
+
                     cam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
                 }
 
@@ -53,11 +56,11 @@ public class VisionTest extends FishloAutonomousProgram {
                     System.exit(0);
                 }
             });
-            /*placement = vision.getPlacement();
-            telemetry.addData("Position", placement);
-            telemetry.update();*/
+            placement = vision.getPlacement();
             telemetry.addData("Position", placement);
             telemetry.update();
+//            telemetry.addData("Position", placement);
+//            telemetry.update();
         }
     }
 
