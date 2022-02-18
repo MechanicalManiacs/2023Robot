@@ -108,7 +108,6 @@ public class blue_carousel extends FishloAutonomousProgram {
                 .build();
         drive.followTrajectory(to_wall);
         sleep(100);
-        intake.duck2.setPower(0.4);
         sleep(5000);
         Trajectory Park = drive.trajectoryBuilder(to_wall.end())
                 .splineToConstantHeading(new Vector2d(23, -40), Math.toRadians(0))

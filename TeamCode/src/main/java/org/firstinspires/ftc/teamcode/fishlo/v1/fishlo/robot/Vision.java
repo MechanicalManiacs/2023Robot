@@ -17,7 +17,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private TSEDetectionPipeline pipeline;
+    private VisionPipeline pipeline2;
 
     private TSEDetectionPipeline.BarcodePosition barcodePosition = TSEDetectionPipeline.BarcodePosition.NULL;
 
@@ -43,19 +43,26 @@ public class Vision extends SubSystem {
 
     @Override
     public void init() {
+
+    }
+
+    public void initVision() {
         // OpenCV webcam
         int cameraMonitorViewId = robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
 
         //OpenCV Pipeline
 
-        pipeline = new TSEDetectionPipeline();
+        pipeline2 = new VisionPipeline(0, 0, 0, 0);
+
+        pipeline2.configureScalarLower(VisionPipeline.scalarLowerHSV.val[0], VisionPipeline.scalarLowerHSV.val[1], VisionPipeline.scalarLowerHSV.val[2]);
+        pipeline2.configureScalarUpper(VisionPipeline.scalarUpperHSV.val[0], VisionPipeline.scalarUpperHSV.val[0], VisionPipeline.scalarUpperHSV.val[0]);
 
         // Webcam Streaming
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcam.setPipeline(pipeline);
+                webcam.setPipeline(pipeline2);
                 webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
@@ -69,12 +76,20 @@ public class Vision extends SubSystem {
     }
 
     public TSEDetectionPipeline.BarcodePosition getPlacement() {
-        barcodePosition = pipeline.getBarcodePosition();
+        if (pipeline2.getRectMidpointX() > TSEDetectionPipeline.rightThreshold) {
+            barcodePosition = TSEDetectionPipeline.BarcodePosition.RIGHT;
+        }
+        else if (pipeline2.getRectMidpointX() > TSEDetectionPipeline.leftThreshold) {
+            barcodePosition = TSEDetectionPipeline.BarcodePosition.LEFT;
+        }
+        else {
+            barcodePosition = TSEDetectionPipeline.BarcodePosition.CENTER;
+        }
         return barcodePosition;
     }
 
     public double getVisionX() {
-        return pipeline.getRectX();
+        return pipeline2.getRectMidpointX();
     }
 
     @Override

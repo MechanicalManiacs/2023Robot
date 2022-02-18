@@ -33,7 +33,7 @@ public class WareRed extends FishloAutonomousProgram {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
         drive.initGyro();
-        telemetry.addLine("Dectecting Position of Barcode");
+        vision.initVision();
         while (!isStarted()) {
             position = vision.getPlacement();
             telemetry.addData("Position", position);
@@ -46,11 +46,10 @@ public class WareRed extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-        vision.stop();
+//        vision.initVision();
+//        position = vision.getPlacement();
+//        vision.stop();
         telemetry.clear();
-        telemetry.update();
-        telemetry.addLine("1. Strafing");
-        telemetry.update();
         mdrive = new SampleMecanumDrive(hardwareMap);
         //sleep(200);
         mdrive.setPoseEstimate(new Pose2d());
@@ -73,28 +72,29 @@ public class WareRed extends FishloAutonomousProgram {
                 telemetry.update();
         }
         Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, 24), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(17, 24), Math.toRadians(0))
                 .build();
         mdrive.followTrajectory(to_hub);
-        intake.armToLevel(2, false, 0);
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
-        Trajectory ware = mdrive.trajectoryBuilder(to_hub.end())
-                .splineTo(new Vector2d(0,-5), Math.toRadians(0))
+        mdrive.turn(Math.toRadians(-169));
+        Pose2d plose = new Pose2d(to_hub.end().getX(), to_hub.end().getY(), Math.toRadians(180));
+        Trajectory ware = mdrive.trajectoryBuilder(plose)
+                .splineTo(new Vector2d(-15,-10), Math.toRadians(180))
                 .build();
         mdrive.followTrajectory(ware);
-        Trajectory getBlock = mdrive.trajectoryBuilder(ware.end())
-                .splineTo(new Vector2d(0,-30), Math.toRadians(0))
-                .addDisplacementMarker(() -> {
-                    intake.intake(Intake.IntakeState.ON);
-
-                })
-                .splineTo(new Vector2d(0, -40), Math.toRadians(-90),
-                        SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        mdrive.followTrajectory(getBlock);
+//        Trajectory getBlock = mdrive.trajectoryBuilder(ware.end())
+//                .splineTo(new Vector2d(0,-30), Math.toRadians(-180))
+//                .addDisplacementMarker(() -> {
+//                    intake.intake(Intake.IntakeState.ON);
+//
+//                })
+////                .splineTo(new Vector2d(0, -40), Math.toRadians(-90),
+////                        SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+////                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+//                .build();
+//        mdrive.followTrajectory(getBlock);
 
 
 

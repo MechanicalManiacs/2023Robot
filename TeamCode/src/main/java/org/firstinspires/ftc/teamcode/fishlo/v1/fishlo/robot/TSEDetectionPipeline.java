@@ -21,8 +21,8 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
     double hue = 0;
     double sens = 0;
 
-    double leftThreshold = 233;
-    double rightThreshold = 383;
+    public static double leftThreshold = 233;
+    public static double rightThreshold = 383;
 
     List<MatOfPoint> contours = new ArrayList<>();
 

@@ -32,15 +32,12 @@ public class Intake extends SubSystem {
     public DcMotor arm;
     public DcMotor intake;
     public DcMotor duck;
-    public DcMotor duck2;
-
-    public ColorSensor color;
 
     public DistanceSensor distance;
 
     int count = 0;
 
-    public CRServo capstoneClaw;
+//    public CRServo capstoneClaw;
 
     double coeff = 1;
 
@@ -72,11 +69,9 @@ public class Intake extends SubSystem {
         arm = robot.hardwareMap.dcMotor.get("arm");
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
-        duck2 = robot.hardwareMap.dcMotor.get("carousel2");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+//        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
         distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
-        color = robot.hardwareMap.colorSensor.get("color");
     }
 
     public enum BlockIn {
@@ -91,7 +86,7 @@ public class Intake extends SubSystem {
             duck.setPower(0);
         }
         arm.setPower(-robot.gamepad2.left_stick_y/coeff);
-        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
+//        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
         if (robot.gamepad2.dpad_up) {
             coeff = 1.5;
         }
@@ -104,7 +99,6 @@ public class Intake extends SubSystem {
         }
 
         duck.setPower(robot.gamepad2.right_stick_x);
-        duck2.setPower(robot.gamepad2.right_stick_x);
 
         if (robot.gamepad2.x) {
             duckTimer.reset();
@@ -125,16 +119,14 @@ public class Intake extends SubSystem {
         if (robot.gamepad2.left_trigger >= 0.5) {
             intake.setPower(-0.5);
         }
+        else {
+            intake(IntakeState.OFF);
+        }
         if (robot.gamepad2.left_bumper) {
             intake.setPower(-0.3);
         }
-        intake(IntakeState.OFF);
-        robot.telemetry.addData("Block Status", isBlockIn());
-        if (isBlockIn() == BlockIn.IN) {
-            color.enableLed(true);
-        }
         else {
-            color.enableLed(false);
+            intake(IntakeState.OFF);
         }
     }
 
