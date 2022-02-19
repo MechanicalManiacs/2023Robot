@@ -21,7 +21,7 @@ import java.util.Vector;
 import kotlin.math.UMathKt;
 
 @Autonomous
-public class WareRed extends FishloAutonomousProgram {
+public class Red_Ware1B extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
@@ -71,15 +71,15 @@ public class WareRed extends FishloAutonomousProgram {
                 intake.armToLevel(2, false, 0);
                 break;
             case NULL:
-                int random = (int)(Math.random()*3);
+                int random = (int) (Math.random() * 3);
                 intake.armToLevel(random, false, 0);
                 telemetry.addData("Default Postion", random);
                 telemetry.update();
         }
         telemetry.addLine("Before trajectory");
 
-        Trajectory to_hub  = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(19, 25), Math.toRadians(0))
+        Trajectory to_hub = mdrive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(17, 25), Math.toRadians(0))
                 .build();
         telemetry.addLine("After");
         mdrive.followTrajectory(to_hub);
@@ -87,7 +87,7 @@ public class WareRed extends FishloAutonomousProgram {
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         Trajectory go_back = mdrive.trajectoryBuilder(to_hub.end())
-                .lineTo(new Vector2d(10,25))
+                .lineTo(new Vector2d(10, 25))
                 .build();
         mdrive.followTrajectory(go_back);
         intake.stop();
@@ -99,10 +99,10 @@ public class WareRed extends FishloAutonomousProgram {
         telemetry.update();
         intake.intake(Intake.IntakeState.ON);
 
-        Pose2d lpose= new Pose2d(go_back.end().getX(), go_back.end().getY(), Math.toRadians(-90));
+        Pose2d lpose = new Pose2d(go_back.end().getX(), go_back.end().getY(), Math.toRadians(-90));
         Trajectory ware = mdrive.trajectoryBuilder(lpose)
-                .splineToConstantHeading(new Vector2d(-15,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -40), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, 10), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, -30), Math.toRadians(-90))
                 .build();
         telemetry.addLine("i stg");
         telemetry.update();
@@ -112,15 +112,12 @@ public class WareRed extends FishloAutonomousProgram {
 
         Pose2d turn_pose = new Pose2d(ware.end().getX(), ware.end().getY(), Math.toRadians(-90));
 
-        if (intake.isBlockIn() == Intake.BlockIn.NOT_IN) {
-            Trajectory forward = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
+            Trajectory forward = mdrive.trajectoryBuilder(turn_pose)
                     .forward(5,
                             SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                             SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                     .build();
             mdrive.followTrajectory(forward);
-        }
-        intake.intake(Intake.IntakeState.OFF);
 
 
 
@@ -137,84 +134,23 @@ public class WareRed extends FishloAutonomousProgram {
 //                .build();
 
 
+        telemetry.addLine("about to start new trajectory");
+        telemetry.update();
+        Trajectory block_place = mdrive.trajectoryBuilder(forward.end())
+                .splineToConstantHeading(new Vector2d(-15, 20), Math.toRadians(-90))
+                .build();
+        telemetry.addLine("Built Trajectory block_place");
+        telemetry.update();
+        mdrive.followTrajectory(block_place);
+        telemetry.addLine("Finished running Trajectory block_place");
+        telemetry.update();
+        intake.armToLevel(2, false, 0);
 
-            telemetry.addLine("about to start new trajectory");
-            telemetry.update();
-            Trajectory block_place = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
-                    .splineToConstantHeading(new Vector2d(-15, 20), Math.toRadians(-90))
-                    .build();
-            telemetry.addLine("Built Trajectory block_place");
-            telemetry.update();
-            mdrive.followTrajectory(block_place);
-            telemetry.addLine("Finished running Trajectory block_place");
-            telemetry.update();
-            intake.armToLevel(2, false, 0);
-
-            Trajectory strafe_left = mdrive.trajectoryBuilder(block_place.end())
+        Trajectory strafe_left = mdrive.trajectoryBuilder(block_place.end())
 //                    .strafeLeft(5)
-                    .splineToLinearHeading(new Pose2d(5, 10), Math.toRadians(0))
-                    .build();
-            telemetry.addLine("built strafing");
-            telemetry.update();
-            mdrive.followTrajectory(strafe_left);
-            telemetry.addLine("Finished strafing");
-            telemetry.update();
-            intake.intake(Intake.IntakeState.REVERSE);
-            sleep(500);
-        intake.intake(Intake.IntakeState.OFF);
-        telemetry.addLine("about the start the process for the second block...");
-        telemetry.update();
-        sleep(1000);
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Trajectory goBack = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
-                .lineTo(new Vector2d(-18,25))
+                .splineToConstantHeading(new Vector2d(15, 20), Math.toRadians(0))
                 .build();
-        mdrive.followTrajectory(goBack);
-        intake.stop();
-        intake.resetEncoder();
-        telemetry.addLine("Before turn");
-        telemetry.update();
-        mdrive.turn(Math.toRadians(-78));
-        intake.stop();
-        telemetry.addLine("finished turning");
-        telemetry.update();
-
-        Pose2d wpose= new Pose2d(goBack.end().getX(), goBack.end().getY(), Math.toRadians(-90));
-        Trajectory ware1 = mdrive.trajectoryBuilder(wpose)
-                .splineToConstantHeading(new Vector2d(-20,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-20, -35), Math.toRadians(-90))
-                .build();
-        mdrive.followTrajectory(ware1);
-        while (intake.isBlockIn() == Intake.BlockIn.NOT_IN) {
-
-            Trajectory forward = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
-                    .forward(3,
-                            SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                    .build();
-            mdrive.followTrajectory(forward);
-
-        }
-        Trajectory block_place1 = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
-                .splineToConstantHeading(new Vector2d(-15, 10), Math.toRadians(-90))
-                .build();
-        mdrive.followTrajectory(block_place1);
-        Trajectory strafe_left1 = mdrive.trajectoryBuilder(mdrive.getPoseEstimate())
-//                    .strafeLeft(5)
-                .splineToLinearHeading(new Pose2d(5, 20), Math.toRadians(0))
-                .build();
+//        mdrive.turn(Math.toRadians(75));
         telemetry.addLine("built strafing");
         telemetry.update();
         mdrive.followTrajectory(strafe_left);
@@ -223,16 +159,25 @@ public class WareRed extends FishloAutonomousProgram {
         intake.intake(Intake.IntakeState.REVERSE);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
-
-
-
-
-
+        telemetry.addLine("about the start the process for the second block...");
+        telemetry.update();
+        Pose2d park1 = new Pose2d(strafe_left.end().getX(), strafe_left.end().getY(), Math.toRadians(-90));
+        Trajectory park = mdrive.trajectoryBuilder(park1)
+                .back(10)
+                .build();
+        intake.stop();
+        mdrive.followTrajectory(park);
+        mdrive.turn(Math.toRadians(-75));
+        Pose2d llpose = new Pose2d(park.end().getX(), park.end().getY(), Math.toRadians(-90));
+        Trajectory pair = mdrive.trajectoryBuilder(lpose)
+                .splineToConstantHeading(new Vector2d(-20, 10), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-20, -30), Math.toRadians(-90))
+                .build();
+        mdrive.followTrajectory(pair);
 
 
     }
-
-
 }
+
 
 
