@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.Competition;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.google.ftcresearch.tfod.tracking.ObjectTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -14,13 +13,14 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipeline;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
-import java.util.Objects;
+import java.util.stream.Stream;
 
 @Autonomous
 public class red_carousel extends FishloAutonomousProgram {
 
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
+    SampleMecanumDrive mdrive;
 
     @Override
     protected Robot buildRobot() {
@@ -31,13 +31,14 @@ public class red_carousel extends FishloAutonomousProgram {
     public void preMain() {
         timer = new ElapsedTime();
         telemetry.setAutoClear(true);
-        drive.initGyro();
-        telemetry.addLine("Dectecting Position of Barcode");
-        while (!isStarted()) {
-            position = vision.getPlacement();
-            telemetry.addData("Position", position);
-            telemetry.update();
-        }
+//        while (!isStarted()) {
+//            position = vision.getPlacement();
+//            telemetry.addData("Position", position);
+//            telemetry.update();
+//        }
+         mdrive = new SampleMecanumDrive(hardwareMap);
+        telemetry.addLine("Start");
+        telemetry.update();
 
     }
     // strafe right is positive power, strafe left is negative power!
@@ -45,9 +46,7 @@ public class red_carousel extends FishloAutonomousProgram {
     //Re-push cuz rahul is bad
     @Override
     public void main() {
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        vision.stop();
+//        vision.stop();
         telemetry.clear();
         telemetry.update();
         telemetry.addLine("1. Strafing");
@@ -57,8 +56,10 @@ public class red_carousel extends FishloAutonomousProgram {
         //drive.driveleft(13.5, 0.5, false, 0);
 
         //sleep(200);
-        drive.setPoseEstimate(new Pose2d());
+        mdrive.setPoseEstimate(new Pose2d());
         Pose2d start_pose = new Pose2d(0,0, Math.toRadians(0));
+
+        position = TSEDetectionPipeline.BarcodePosition.CENTER;
 
         switch (position) {
             case LEFT:
@@ -81,35 +82,35 @@ public class red_carousel extends FishloAutonomousProgram {
         telemetry.update();
         telemetry.addLine("3. Move arm to position");
         telemetry.update();
-        Trajectory to_wall = drive.trajectoryBuilder(start_pose, true)
+        Trajectory to_hub  = mdrive.trajectoryBuilder(start_pose)
+                .splineToConstantHeading(new Vector2d(20,  -16),Math.toRadians(0))
+                .build();
+        mdrive.followTrajectory(to_hub);
+        sleep(200);
+        mdrive.turn(Math.toRadians(-12));
+        intake.intake(Intake.IntakeState.REVERSE);
+        sleep(2000);
+        intake.intake(Intake.IntakeState.OFF);
+        sleep(100);
+        mdrive.turn(Math.toRadians(15));
+
+        Trajectory to_wall = mdrive.trajectoryBuilder(to_hub.end(), true)
                 .splineToConstantHeading(new Vector2d(0 ,20), Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(0, 30), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
 
                 .build();
-        drive.followTrajectory(to_wall);
-
-        sleep(200);
-        drive.turn(Math.toRadians(-12));
-        intake.intake(Intake.IntakeState.REVERSE);
-        sleep(2000);
-        intake.intake(Intake.IntakeState.OFF);
-        sleep(100);
-        drive.turn(Math.toRadians(15));
+        mdrive.followTrajectory(to_wall);
 
         sleep(100);
-        Trajectory to_hub  = drive.trajectoryBuilder(to_wall.end())
-                .splineToConstantHeading(new Vector2d(21,  -16),Math.toRadians(0))
-                .build();
-        drive.followTrajectory(to_hub);
         sleep(100);
         intake.duck.setPower(-0.4);
         sleep(5000);
-        Trajectory Park = drive.trajectoryBuilder(to_hub.end())
+        Trajectory Park = mdrive.trajectoryBuilder(to_wall.end())
                 .splineToConstantHeading(new Vector2d(20,40), Math.toRadians(0))
                 .build();
-        drive.followTrajectory(Park);
+        mdrive.followTrajectory(Park);
 
 
 

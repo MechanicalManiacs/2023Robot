@@ -35,11 +35,8 @@ public class WareRed extends FishloAutonomousProgram {
 
     @Override
     public void preMain() {
-        telemetry.setAutoClear(true);
-
-        telemetry.addLine("trajectories built");
-        telemetry.update();
         timer = new ElapsedTime();
+        telemetry.setAutoClear(true);
         drive.initGyro();
         vision.initVision();
         while (!isStarted()) {
@@ -61,7 +58,6 @@ public class WareRed extends FishloAutonomousProgram {
         mdrive = new SampleMecanumDrive(hardwareMap);
         //sleep(200);
         mdrive.setPoseEstimate(new Pose2d());
-
         Pose2d start_pose = new Pose2d(0, 0, Math.toRadians(0));
 
         switch (position) {
@@ -106,7 +102,7 @@ public class WareRed extends FishloAutonomousProgram {
         Pose2d lpose= new Pose2d(go_back.end().getX(), go_back.end().getY(), Math.toRadians(-90));
         Trajectory ware = mdrive.trajectoryBuilder(lpose)
                 .splineToConstantHeading(new Vector2d(-15,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -20), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, -30), Math.toRadians(-90))
                 .build();
         telemetry.addLine("i stg");
         telemetry.update();
@@ -149,12 +145,6 @@ public class WareRed extends FishloAutonomousProgram {
         mdrive.followTrajectory(strafe_left);
         telemetry.addLine("Finished strafing");
         telemetry.update();
-
-
-
-
-
-
     }
 
 

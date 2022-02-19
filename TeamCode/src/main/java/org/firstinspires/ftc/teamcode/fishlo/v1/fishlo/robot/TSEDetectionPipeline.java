@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.opencv.core.Core;
@@ -16,10 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+
+@Config
 public class TSEDetectionPipeline extends OpenCvPipeline {
 
-    double hue = 0;
-    double sens = 0;
+    public static double hue = 50;
+    public static double sens = 30;
 
     public static double leftThreshold = 233;
     public static double rightThreshold = 383;
@@ -62,9 +65,6 @@ public class TSEDetectionPipeline extends OpenCvPipeline {
             //blur.release();
 
             contours.clear();
-
-            hue = 50;
-            sens = 30;
 
             //Find contours, (orange)
             Scalar lowHSV = new Scalar((hue / 2) - sens, 60, 85);

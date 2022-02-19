@@ -61,14 +61,14 @@ public class Drive extends SubSystem {
 
     MecanumDrive drive;
 
-    private enum DriveControls {
+    public enum DriveControls {
         TANK,
         ARCADE,
         NONE
     }
 
-    DriveControls[] driveControls = {DriveControls.ARCADE, DriveControls.TANK};
-    DriveControls driveType;
+    DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
+    public static DriveControls driveType;
     int driveIndex = 0;
     boolean telemetryEnabled;
 
@@ -114,6 +114,10 @@ public class Drive extends SubSystem {
             if (driveIndex > 1) {
                 driveIndex = 0;
             }
+        }
+
+        if (robot.gamepad1.right_trigger >= 0.5) {
+            Intake.driveOuttake();
         }
 
         switch (driveType) {
