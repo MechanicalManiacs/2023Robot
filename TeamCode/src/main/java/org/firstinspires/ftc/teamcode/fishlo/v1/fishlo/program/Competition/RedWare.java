@@ -19,7 +19,6 @@ import org.opencv.core.Mat;
 
 import java.util.Vector;
 
-@Autonomous
 public class RedWare extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;

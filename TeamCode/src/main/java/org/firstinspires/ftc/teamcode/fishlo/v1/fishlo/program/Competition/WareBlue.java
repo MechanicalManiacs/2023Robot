@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.TSEDetectionPipelin
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
 @Autonomous
-public class WareRed extends FishloAutonomousProgram {
+public class WareBlue extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;
     SampleMecanumDrive mdrive;
@@ -47,8 +47,6 @@ public class WareRed extends FishloAutonomousProgram {
     @Override
     public void main() {
         //pre-stuff
-        telemetry.addLine("I hate ftc");
-        telemetry.update();
         vision.stop();
         telemetry.clear();
         mdrive = new SampleMecanumDrive(hardwareMap);
@@ -73,20 +71,24 @@ public class WareRed extends FishloAutonomousProgram {
         }
         telemetry.addLine("Before trajectory");
 
-        //to hub
         trajectory = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(19, 25), Math.toRadians(0))
+                .forward(0.1)
+                .build();
+        //to hub
+        endTraj = trajectory.end();
+        trajectory = mdrive.trajectoryBuilder(endTraj)
+                .splineToConstantHeading(new Vector2d(23, -27), Math.toRadians(0))
                 .build();
         telemetry.addLine("After");
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();
         //drop block
-        Intake.intake.setPower(-.5);
+        Intake.intake.setPower(-.59);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         //nudge backward
         trajectory = mdrive.trajectoryBuilder(endTraj)
-                .lineTo(new Vector2d(11,25))
+                .lineTo(new Vector2d(10,-25))
                 .build();
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();
@@ -94,15 +96,15 @@ public class WareRed extends FishloAutonomousProgram {
         intake.resetEncoder();
         telemetry.addLine("Before turn");
         telemetry.update();
-        mdrive.turn(Math.toRadians(-78));
+        mdrive.turn(Math.toRadians(78));
         telemetry.addLine("finished turning");
         telemetry.update();
         intake.intake(Intake.IntakeState.ON);
         //line up with wall and go straight
-        Pose2d lpose= new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(-90));
+        Pose2d lpose= new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(90));
         trajectory = mdrive.trajectoryBuilder(lpose)
-                .splineToConstantHeading(new Vector2d(-15,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -25), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15,-10), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-15, 25), Math.toRadians(90))
                 .build();
         telemetry.addLine("i stg");
         telemetry.update();
@@ -111,7 +113,7 @@ public class WareRed extends FishloAutonomousProgram {
         telemetry.addLine("i stg part 2");
         telemetry.update();
         //grab block
-        Pose2d turn_pose = new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(-90));
+        Pose2d turn_pose = new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(90));
         trajectory = mdrive.trajectoryBuilder(turn_pose)
                 .forward(3,
                         SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -124,8 +126,8 @@ public class WareRed extends FishloAutonomousProgram {
 
         //comes out of warehouse
         trajectory = mdrive.trajectoryBuilder(endTraj)
-            .splineToConstantHeading(new Vector2d(-15, 20), Math.toRadians(-90))
-            .build();
+                .splineToConstantHeading(new Vector2d(-20, -20), Math.toRadians(90))
+                .build();
         telemetry.addLine("Built Trajectory block_place");
         telemetry.update();
         mdrive.followTrajectory(trajectory);
@@ -136,7 +138,7 @@ public class WareRed extends FishloAutonomousProgram {
         intake.armToLevel(2, false, 0);
         //go back to hub
         trajectory = mdrive.trajectoryBuilder(endTraj)
-                .splineToLinearHeading(new Pose2d(6, 24), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(10, -25), Math.toRadians(0))
                 .build();
         telemetry.addLine("built strafing");
         telemetry.update();
@@ -145,14 +147,14 @@ public class WareRed extends FishloAutonomousProgram {
         telemetry.addLine("Finished strafing");
         telemetry.update();
         //release block
-        Intake.intake.setPower(-.4);
+        Intake.intake.setPower(-.25);
         sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
         telemetry.addLine("about the start the process for the second block...");
         telemetry.update();
         //nudge backward
         trajectory = mdrive.trajectoryBuilder(endTraj)
-                .lineTo(new Vector2d(-18,25))
+                .lineTo(new Vector2d(-18,-25))
                 .build();
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();
@@ -160,15 +162,15 @@ public class WareRed extends FishloAutonomousProgram {
         intake.resetEncoder();
         telemetry.addLine("Before turn");
         telemetry.update();
-        mdrive.turn(Math.toRadians(-78));
+        mdrive.turn(Math.toRadians(78));
         intake.stop();
         telemetry.addLine("finished turning");
         telemetry.update();
         //go to wall and straight into warehouse
-        Pose2d wpose = new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(-90));
+        Pose2d wpose = new Pose2d(endTraj.getX(), endTraj.getY(), Math.toRadians(90));
         trajectory = mdrive.trajectoryBuilder(wpose)
-                .splineToConstantHeading(new Vector2d(-20,10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-20, -35), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-20,-10), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-25, 31), Math.toRadians(90))
                 .build();
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();

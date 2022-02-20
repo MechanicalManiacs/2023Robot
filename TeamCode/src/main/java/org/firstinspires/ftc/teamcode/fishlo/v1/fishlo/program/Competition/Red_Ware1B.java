@@ -102,7 +102,7 @@ public class Red_Ware1B extends FishloAutonomousProgram {
         Pose2d lpose = new Pose2d(go_back.end().getX(), go_back.end().getY(), Math.toRadians(-90));
         Trajectory ware = mdrive.trajectoryBuilder(lpose)
                 .splineToConstantHeading(new Vector2d(-15, 10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-15, -30), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-15, -27), Math.toRadians(-90))
                 .build();
         telemetry.addLine("i stg");
         telemetry.update();
@@ -113,7 +113,7 @@ public class Red_Ware1B extends FishloAutonomousProgram {
         Pose2d turn_pose = new Pose2d(ware.end().getX(), ware.end().getY(), Math.toRadians(-90));
 
             Trajectory forward = mdrive.trajectoryBuilder(turn_pose)
-                    .forward(5,
+                    .forward(8,
                             SampleMecanumDrive.getVelocityConstraint(8, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                             SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                     .build();
@@ -148,7 +148,7 @@ public class Red_Ware1B extends FishloAutonomousProgram {
 
         Trajectory strafe_left = mdrive.trajectoryBuilder(block_place.end())
 //                    .strafeLeft(5)
-                .splineToConstantHeading(new Vector2d(15, 20), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(10, 25), Math.toRadians(0))
                 .build();
 //        mdrive.turn(Math.toRadians(75));
         telemetry.addLine("built strafing");
@@ -156,7 +156,7 @@ public class Red_Ware1B extends FishloAutonomousProgram {
         mdrive.followTrajectory(strafe_left);
         telemetry.addLine("Finished strafing");
         telemetry.update();
-        intake.intake(Intake.IntakeState.REVERSE);
+        Intake.intake.setPower(-0.7);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         telemetry.addLine("about the start the process for the second block...");
@@ -170,8 +170,8 @@ public class Red_Ware1B extends FishloAutonomousProgram {
         mdrive.turn(Math.toRadians(-75));
         Pose2d llpose = new Pose2d(park.end().getX(), park.end().getY(), Math.toRadians(-90));
         Trajectory pair = mdrive.trajectoryBuilder(lpose)
-                .splineToConstantHeading(new Vector2d(-20, 10), Math.toRadians(-90))
-                .splineToConstantHeading(new Vector2d(-20, -30), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-30, 10), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-30, -30), Math.toRadians(-90))
                 .build();
         mdrive.followTrajectory(pair);
 

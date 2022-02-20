@@ -88,13 +88,13 @@ public class blue_carousel extends FishloAutonomousProgram {
         telemetry.update();
         sleep(5000);
         Trajectory to_hub = drive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20, 16), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(21, 16), Math.toRadians(0))
                 .build();
         drive.followTrajectory(to_hub);
 
         sleep(200);
         drive.turn(Math.toRadians(12));
-        intake.intake(Intake.IntakeState.REVERSE);
+        Intake.intake.setPower(-0.6);
         sleep(2000);
         intake.intake(Intake.IntakeState.OFF);
         sleep(250);
@@ -109,14 +109,14 @@ public class blue_carousel extends FishloAutonomousProgram {
                 .build();
         drive.followTrajectory(to_wall);
         Trajectory back = drive.trajectoryBuilder(to_wall.end())
-                .back(5)
+                .back(6)
                 .build();
         drive.followTrajectory(back);
         sleep(100);
         intake.duck.setPower(0.4);
         sleep(5000);
         Trajectory Park = drive.trajectoryBuilder(back.end())
-                .splineToConstantHeading(new Vector2d(28, -35), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(25, -35), Math.toRadians(0))
                 .build();
         drive.followTrajectory(Park);
 

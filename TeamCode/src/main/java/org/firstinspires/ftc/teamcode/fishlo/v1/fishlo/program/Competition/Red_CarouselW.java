@@ -16,7 +16,6 @@ import org.opencv.core.Mat;
 
 import java.util.stream.Stream;
 
-@Autonomous
 public class Red_CarouselW extends FishloAutonomousProgram {
 
     TSEDetectionPipeline.BarcodePosition position;

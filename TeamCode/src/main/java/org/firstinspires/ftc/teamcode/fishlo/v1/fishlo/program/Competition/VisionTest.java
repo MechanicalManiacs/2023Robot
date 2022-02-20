@@ -15,7 +15,6 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Autonomous
 @Config
 public class VisionTest extends FishloAutonomousProgram {
 

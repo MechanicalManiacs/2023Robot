@@ -26,6 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
+import org.firstinspires.ftc.teamcode.util.RegressionUtil;
 
 import java.time.OffsetDateTime;
 
@@ -39,7 +40,7 @@ public class Intake extends SubSystem {
 
     int count = 0;
 
-    public CRServo capstoneClaw;
+    public Servo capstoneClaw;
 
     double coeff = 1;
 
@@ -72,8 +73,9 @@ public class Intake extends SubSystem {
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+        capstoneClaw = robot.hardwareMap.servo.get("capstoneClaw");
         distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+        capstoneClaw.setDirection(Servo.Direction.REVERSE);
     }
 
     public enum BlockIn {
@@ -83,50 +85,35 @@ public class Intake extends SubSystem {
 
     @Override
     public void handle() {
-        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
-        arm.setPower(Range.clip(-robot.gamepad2.left_stick_y, -0.9, 0.9));
-        if (robot.gamepad2.dpad_up) {
-            coeff = 1.5;
+        if (robot.gamepad2.x) {
+            capstoneClaw.setPosition(0.55);
         }
-        if (robot.gamepad2.dpad_down) {
-            coeff = 1;
+        if (robot.gamepad2.a) {
+            capstoneClaw.setPosition(0);
         }
-        double increment = 0.1;
-        if (robot.gamepad2.right_bumper) {
-            duck.setPower(-0.8);
+        if (robot.gamepad2.y) {
+            capstoneClaw.setPosition(0.7);
         }
+        if (robot.gamepad2.b) {
+            capstoneClaw.setPosition(0.75);
+        }
+        arm.setPower(Range.clip(-robot.gamepad2.left_stick_y, -0.65, 0.65));
 
         duck.setPower(robot.gamepad2.right_stick_x);
-
-        if (robot.gamepad2.x) {
-            duckTimer.reset();
-            while (duckTimer.seconds() <= 0.7) {
-                duck.setPower(-0.4);
-            }
-
-            duckTimer.reset();
-            while (duckTimer.seconds() <= 1.5){
-                duck.setPower(-0.8);
-            }
-            duck.setPower(0);
-        }
-
-        if (robot.gamepad2.right_trigger >= 0.5) {
-            intake.setPower(1);
-        }
-        if (robot.gamepad2.left_trigger >= 0.5) {
-            if (Drive.driveType == Drive.DriveControls.TANK) intake.setPower(-0.5);
-            else if (Drive.driveType == Drive.DriveControls.ARCADE) intake(IntakeState.REVERSE);
+        if (!robot.gamepad2.right_bumper && !robot.gamepad2.left_bumper) {
+            intake.setPower(0);
         }
         else {
-            intake(IntakeState.OFF);
+            if (robot.gamepad2.right_bumper) {
+                intake.setPower(1);
+            }
+            if (robot.gamepad2.left_bumper) {
+                if (Drive.driveType == Drive.DriveControls.TANK) intake.setPower(-0.5);
+                else if (Drive.driveType == Drive.DriveControls.ARCADE) intake(IntakeState.REVERSE);
+            }
         }
-        if (robot.gamepad2.left_bumper) {
-            intake.setPower(-0.4);
-        }
-        else {
-            intake(IntakeState.OFF);
-        }
+        robot.telemetry.addData("Block Status", isBlockIn());
+        robot.telemetry.update();
     }
 
     public enum IntakeState {
@@ -220,7 +207,7 @@ public class Intake extends SubSystem {
 
     public BlockIn isBlockIn() {
         BlockIn blockIn = BlockIn.NOT_IN;
-        if (distance.getDistance(DistanceUnit.INCH) <= 2.5) blockIn = BlockIn.IN;
+        if (distance.getDistance(DistanceUnit.INCH) <= 1.5) blockIn = BlockIn.IN;
         else blockIn = BlockIn.NOT_IN;
         return blockIn;
     }

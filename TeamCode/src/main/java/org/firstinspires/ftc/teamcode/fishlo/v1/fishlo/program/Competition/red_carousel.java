@@ -84,15 +84,15 @@ public class red_carousel extends FishloAutonomousProgram {
         telemetry.addLine("3. Move arm to position");
         telemetry.update();
         Trajectory to_hub  = mdrive.trajectoryBuilder(start_pose)
-                .splineToConstantHeading(new Vector2d(20,  -16),Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(25,  -16),Math.toRadians(0))
                 .build();
         mdrive.followTrajectory(to_hub);
         sleep(200);
-        mdrive.turn(Math.toRadians(-12));
-        intake.intake(Intake.IntakeState.REVERSE);
-        sleep(2000);
+        mdrive.turn(Math.toRadians(-10));
+        Intake.intake.setPower(-.6);
+        sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
-        sleep(100);
+
         mdrive.turn(Math.toRadians(15));
 
         Trajectory to_wall = mdrive.trajectoryBuilder(to_hub.end(), true)
@@ -113,7 +113,7 @@ public class red_carousel extends FishloAutonomousProgram {
         intake.duck.setPower(-0.4);
         sleep(5000);
         Trajectory Park = mdrive.trajectoryBuilder(to_wall.end())
-                .splineToConstantHeading(new Vector2d(25,38), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(22,38), Math.toRadians(0))
                 .build();
         mdrive.followTrajectory(Park);
 

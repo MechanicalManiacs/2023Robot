@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 
 import java.util.Vector;
 
-@Autonomous
+
 public class red_warehouse extends FishloAutonomousProgram {
     TSEDetectionPipeline.BarcodePosition position;
     ElapsedTime timer;

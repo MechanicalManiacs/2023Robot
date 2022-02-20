@@ -72,7 +72,7 @@ public class Drive extends SubSystem {
     int driveIndex = 0;
     boolean telemetryEnabled;
 
-    int coeff = 1;
+    double coeff = 1;
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -147,20 +147,23 @@ public class Drive extends SubSystem {
                 bl = -robot.gamepad1.left_stick_y / coeff;
                 br = -robot.gamepad1.right_stick_y / coeff;
                 if (robot.gamepad1.left_bumper) {
-                    fl = -1 / coeff;
-                    fr = 1 / coeff;
-                    bl = 1 / coeff;
-                    br = -1 / coeff;
+                    fl = -1.0 / coeff;
+                    fr = 1.0 / coeff;
+                    bl = 1.0 / coeff;
+                    br = -1.0 / coeff;
                 }
                 if (robot.gamepad1.right_bumper) {
-                    fl = 1 / coeff;
-                    fr = -1 / coeff;
-                    bl = -1 / coeff;
-                    br = 1 / coeff;
+                    fl = 1.0 / coeff;
+                    fr = -1.0 / coeff;
+                    bl = -1.0 / coeff;
+                    br = 1.0 / coeff;
                 }
                 if (robot.gamepad1.left_trigger >= 0.5) {
                     coeff = 2;
-                } else {
+                } else if (robot.gamepad1.a){
+                    coeff = 0.5;
+                }
+                else {
                     coeff = 1;
                 }
                 break;

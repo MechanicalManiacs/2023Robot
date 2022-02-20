@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.program.FishloAutonomousP
 import org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 
-@Autonomous
 public class DistanceSensorTest extends FishloAutonomousProgram {
 
     DistanceSensor distanceSensor;
