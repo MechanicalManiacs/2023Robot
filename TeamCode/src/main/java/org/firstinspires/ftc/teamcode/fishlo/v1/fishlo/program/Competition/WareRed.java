@@ -81,7 +81,7 @@ public class WareRed extends FishloAutonomousProgram {
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();
         //drop block
-        Intake.intake.setPower(-.5);
+        Intake.intake.setPower(-.65);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         //nudge backward
@@ -145,7 +145,7 @@ public class WareRed extends FishloAutonomousProgram {
         telemetry.addLine("Finished strafing");
         telemetry.update();
         //release block
-        Intake.intake.setPower(-.4);
+        Intake.intake.setPower(-.25);
         sleep(1000);
         intake.intake(Intake.IntakeState.OFF);
         telemetry.addLine("about the start the process for the second block...");

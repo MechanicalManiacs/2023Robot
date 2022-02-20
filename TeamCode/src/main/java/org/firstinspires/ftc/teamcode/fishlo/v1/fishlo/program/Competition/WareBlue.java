@@ -83,7 +83,7 @@ public class WareBlue extends FishloAutonomousProgram {
         mdrive.followTrajectory(trajectory);
         endTraj = trajectory.end();
         //drop block
-        Intake.intake.setPower(-.59);
+        Intake.intake.setPower(-.65);
         sleep(500);
         intake.intake(Intake.IntakeState.OFF);
         //nudge backward
