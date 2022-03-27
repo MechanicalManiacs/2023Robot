@@ -20,8 +20,10 @@ public class VisionPipeline extends OpenCvPipeline {
     Scalar ORANGE = new Scalar(255, 145, 0);
 
     // Pink, the default color                         Y      Cr     Cb    (Do not change Y)
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 0.0, 0.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 0.0, 0.0);
+     private static int hue = 50;
+     private static int sens = 30;
+     public static Scalar scalarLowerHSV = new Scalar((hue / 2) - sens, 60, 85);
+     public static Scalar scalarUpperHSV = new Scalar(hue + sens, 255, 255);
 
     // Green                                             Y      Cr     Cb
     // public static Scalar scalarLowerYCrCb = new Scalar(  0.0, 0.0, 0.0);
@@ -64,36 +66,34 @@ public class VisionPipeline extends OpenCvPipeline {
     }
 
     public void configureScalarLower(double y, double cr, double cb) {
-        scalarLowerYCrCb = new Scalar(y, cr, cb);
+        scalarLowerHSV = new Scalar(y, cr, cb);
     }
 
     public void configureScalarUpper(double y, double cr, double cb) {
-        scalarUpperYCrCb = new Scalar(y, cr, cb);
+        scalarUpperHSV = new Scalar(y, cr, cb);
     }
 
     public void configureScalarLower(int y, int cr, int cb) {
-        scalarLowerYCrCb = new Scalar(y, cr, cb);
+        scalarLowerHSV = new Scalar(y, cr, cb);
     }
 
     public void configureScalarUpper(int y, int cr, int cb) {
-        scalarUpperYCrCb = new Scalar(y, cr, cb);
+        scalarUpperHSV = new Scalar(y, cr, cb);
     }
 
     @Override
     public Mat processFrame(Mat input) {
+        input = input.submat(input.rows() / 3, input.rows() - 1, 0, input.cols() - 1);
         CAMERA_WIDTH = input.width();
         CAMERA_HEIGHT = input.height();
         try {
             // Process Image
-            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2YCrCb);
-            Core.inRange(mat, scalarLowerYCrCb, scalarUpperYCrCb, processed);
+            Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
+            Core.inRange(mat, scalarLowerHSV, scalarUpperHSV, processed);
             // Core.bitwise_and(input, input, output, processed);
 
-            // Remove Noise
-            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_OPEN, new Mat());
-            Imgproc.morphologyEx(processed, processed, Imgproc.MORPH_CLOSE, new Mat());
             // GaussianBlur
-            Imgproc.GaussianBlur(processed, processed, new Size(5.0, 15.0), 0.00);
+            Imgproc.GaussianBlur(processed, processed, new Size(5.0, 5.0), 0.00);
             // Find Contours
             List<MatOfPoint> contours = new ArrayList<>();
             Imgproc.findContours(processed, contours, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);

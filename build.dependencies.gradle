@@ -3,6 +3,7 @@ repositories {
     google() // Needed for androidx
     jcenter()  // Needed for tensorflow-lite
     maven { url = 'https://maven.brott.dev/' }
+    maven { url = "https://maven.0x778.tk" }
     flatDir {
         dirs rootProject.file('libs')
     }
@@ -21,5 +22,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.acmerobotics.dashboard:dashboard:0.4.3'
     implementation 'org.firstinspires.ftc:gameAssets-FreightFrenzy:1.0.0'
+
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.4'
 }
 

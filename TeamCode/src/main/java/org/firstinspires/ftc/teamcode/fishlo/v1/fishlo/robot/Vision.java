@@ -1,8 +1,11 @@
+
 package org.firstinspires.ftc.teamcode.fishlo.v1.fishlo.robot;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
 import org.opencv.core.Scalar;
@@ -10,11 +13,15 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
-
+import org.openftc.easyopencv.OpenCvInternalCamera2;
+import org.openftc.easyopencv.OpenCvWebcam;
+@Config
 public class Vision extends SubSystem {
 
     private OpenCvCamera webcam;
-    private VisionPipeline pipeline;
+    private TSEDetectionPipeline pipeline2;
+
+    private TSEDetectionPipeline.BarcodePosition barcodePosition = TSEDetectionPipeline.BarcodePosition.NULL;
 
     private double crThreshHigh = 150;
     private double crThreshLow = 120;
@@ -26,8 +33,6 @@ public class Vision extends SubSystem {
     private double rightBarcodeRangeBoundary = 0.82; //i.e 60% of the way across the frame from the left
 
     // Pink Range                                      Y      Cr     Cb
-    public static Scalar scalarLowerYCrCb = new Scalar(0.0, 128.0, 0.0);
-    public static Scalar scalarUpperYCrCb = new Scalar(255.0, 168.0, 110.0);
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -40,62 +45,42 @@ public class Vision extends SubSystem {
 
     @Override
     public void init() {
+
+    }
+
+    public void initVision() {
         // OpenCV webcam
         int cameraMonitorViewId = robot.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robot.hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hardwareMap.get(WebcamName.class, "webcam 1"), cameraMonitorViewId);
+
         //OpenCV Pipeline
 
-        pipeline = new VisionPipeline(0.17, 0.005, 0.005, 0.005);
-
-        pipeline.configureScalarLower(scalarLowerYCrCb.val[0],scalarLowerYCrCb.val[1],scalarLowerYCrCb.val[2]);
-        pipeline.configureScalarUpper(scalarUpperYCrCb.val[0],scalarUpperYCrCb.val[1],scalarUpperYCrCb.val[2]);
-
-        webcam.setPipeline(pipeline);
+        pipeline2 = new TSEDetectionPipeline();
 
         // Webcam Streaming
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
+                webcam.setPipeline(pipeline2);
                 webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
             public void onError(int errorCode) {
-
+                System.exit(0);
             }
         });
+
+
     }
 
-    public String getPlacement() {
-        String placement = "";
-        if(pipeline.error){
-            robot.telemetry.addData("Exception: ", pipeline.debug.getStackTrace());
-        }
-        // Only use this line of the code when you want to find the lower and upper values, using Ftc Dashboard (https://acmerobotics.github.io/ftc-dashboard/gettingstarted)
-        // testing(pipeline);
+    public TSEDetectionPipeline.BarcodePosition getPlacement() {
+        barcodePosition = pipeline2.getBarcodePosition();
+        return barcodePosition;
+    }
 
-        // Watch our YouTube Tutorial for the better explanation
-
-        double rectangleArea = pipeline.getRectArea();
-
-        //Print out the area of the rectangle that is found.
-
-        //Check to see if the rectangle has a large enough area to be a marker.
-        if(rectangleArea > minRectangleArea){
-            //Then check the location of the rectangle to see which barcode it is in.
-            if(pipeline.getRectMidpointX() > /*rightBarcodeRangeBoundary * pipeline.getRectWidth()*/ 375){
-                placement = "Right";
-            }
-            else if(pipeline.getRectMidpointX() < /*leftBarcodeRangeBoundary * pipeline.getRectWidth()*/ 240){
-                placement = "Left";
-            }
-            else {
-                placement = "Center";
-            }
-        }
-
-        robot.telemetry.update();
-        return placement;
+    public double getVisionX() {
+        return pipeline2.getRectX();
     }
 
     @Override
@@ -105,6 +90,6 @@ public class Vision extends SubSystem {
 
     @Override
     public void stop() {
-        webcam.closeCameraDevice();
+        webcam.stopStreaming();
     }
 }

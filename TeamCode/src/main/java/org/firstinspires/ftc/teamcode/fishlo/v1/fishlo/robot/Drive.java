@@ -55,24 +55,24 @@ public class Drive extends SubSystem {
 
     DcMotor arm;
 
-    SampleMecanumDrive mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
+    SampleMecanumDrive mecanumDrive;
 
     DcMotor[] motors = {frontLeft, frontRight, backLeft, backRight};
 
     MecanumDrive drive;
 
-    private enum DriveControls {
+    public enum DriveControls {
         TANK,
         ARCADE,
         NONE
     }
 
-    DriveControls[] driveControls = {DriveControls.ARCADE, DriveControls.TANK};
-    DriveControls driveType;
+    DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
+    public static DriveControls driveType;
     int driveIndex = 0;
     boolean telemetryEnabled;
 
-    int coeff = 1;
+    double coeff = 1;
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -86,6 +86,7 @@ public class Drive extends SubSystem {
 
     @Override
     public void init() {
+        mecanumDrive = new SampleMecanumDrive(robot.hardwareMap);
         frontLeft = robot.hardwareMap.get(DcMotorEx.class, "frontLeft");
         frontRight = robot.hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = robot.hardwareMap.get(DcMotorEx.class, "backLeft");
@@ -94,6 +95,8 @@ public class Drive extends SubSystem {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         arm = robot.hardwareMap.dcMotor.get("arm");
         timer = new ElapsedTime();
         drive = new MecanumDrive(fl, fr, bl, br);
@@ -113,11 +116,15 @@ public class Drive extends SubSystem {
             }
         }
 
+        if (robot.gamepad1.right_trigger >= 0.5) {
+            Intake.driveOuttake();
+        }
+
         switch (driveType) {
             case ARCADE:
-                double y = robot.gamepad1.left_stick_y; // Remember, this is reversed!
-                double x = -robot.gamepad1.left_stick_x; // Counteract imperfect strafing
-                double rx = -robot.gamepad1.right_stick_x;
+                double y = -robot.gamepad1.left_stick_y; // Remember, this is reversed!
+                double x = robot.gamepad1.left_stick_x; // Counteract imperfect strafing
+                double rx = robot.gamepad1.right_stick_x;
 
                 // Denominator is the largest motor power (absolute value) or 1
                 // This ensures all the powers maintain the same ratio, but only when
@@ -132,29 +139,31 @@ public class Drive extends SubSystem {
                 bl = backLeftPower / coeff;
                 fr = frontRightPower / coeff;
                 br = backRightPower / coeff;
-
                 break;
 
             case TANK:
-                fl = robot.gamepad1.left_stick_y / coeff;
-                fr = robot.gamepad1.right_stick_y / coeff;
-                bl = robot.gamepad1.left_stick_y / coeff;
-                br = robot.gamepad1.right_stick_y / coeff;
-                if (robot.gamepad1.right_bumper) {
-                    fl = -1 / coeff;
-                    fr = 1 / coeff;
-                    bl = 1 / coeff;
-                    br = -1 / coeff;
-                }
+                fl = -robot.gamepad1.left_stick_y / coeff;
+                fr = -robot.gamepad1.right_stick_y / coeff;
+                bl = -robot.gamepad1.left_stick_y / coeff;
+                br = -robot.gamepad1.right_stick_y / coeff;
                 if (robot.gamepad1.left_bumper) {
-                    fl = 1 / coeff;
-                    fr = -1 / coeff;
-                    bl = -1 / coeff;
-                    br = 1 / coeff;
+                    fl = -1.0 / coeff;
+                    fr = 1.0 / coeff;
+                    bl = 1.0 / coeff;
+                    br = -1.0 / coeff;
+                }
+                if (robot.gamepad1.right_bumper) {
+                    fl = 1.0 / coeff;
+                    fr = -1.0 / coeff;
+                    bl = -1.0 / coeff;
+                    br = 1.0 / coeff;
                 }
                 if (robot.gamepad1.left_trigger >= 0.5) {
                     coeff = 2;
-                } else {
+                } else if (robot.gamepad1.a){
+                    coeff = 0.5;
+                }
+                else {
                     coeff = 1;
                 }
                 break;
@@ -169,17 +178,17 @@ public class Drive extends SubSystem {
         drive(fl, bl, fr, br);
         if (telemetryEnabled) {
             robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());
-            robot.telemetry.addLine("Drive - Dat - Motors")
-                    .addData("frontLeft", fl)
-                    .addData("backLeft", bl)
-                    .addData("frontRight", fr)
-                    .addData("backRight", br);
-            robot.telemetry.addLine("Drive - Dat - Inputs")
-                    .addData("LeftY", -robot.gamepad1.left_stick_y)
-                    .addData("RightY", -robot.gamepad1.right_stick_y)
-                    .addData("LeftX", robot.gamepad1.left_stick_x)
-                    .addData("RightX", robot.gamepad1.right_stick_x);
-            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
+//            robot.telemetry.addLine("Drive - Dat - Motors")
+//                    .addData("frontLeft", fl)
+//                    .addData("backLeft", bl)
+//                    .addData("frontRight", fr)
+//                    .addData("backRight", br);
+//            robot.telemetry.addLine("Drive - Dat - Inputs")
+//                    .addData("LeftY", -robot.gamepad1.left_stick_y)
+//                    .addData("RightY", -robot.gamepad1.right_stick_y)
+//                    .addData("LeftX", robot.gamepad1.left_stick_x)
+//                    .addData("RightX", robot.gamepad1.right_stick_x);
+//            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
         }
     }
 
@@ -261,7 +270,7 @@ public class Drive extends SubSystem {
         backLeft.setPower(speed);
         frontRight.setPower(speed);
         backRight.setPower(speed);
-        //
+        //eg
         while (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy()){
             if (exit){
                 frontRight.setPower(0);
@@ -308,8 +317,6 @@ public class Drive extends SubSystem {
         //  backRight.setPower(power);
         backLeft.setPower(power);
         //
-        robot.telemetry.addLine("enter while loop");
-        robot.telemetry.update();
         timer.reset();
         while (frontLeft.isBusy() && backLeft.isBusy()) {
             if (timerOn && timer.seconds() >= time) return;
@@ -337,8 +344,6 @@ public class Drive extends SubSystem {
         backRight.setPower(power);
 //        backLeft.setPower(power);
         //
-        robot.telemetry.addLine("enter while loop");
-        robot.telemetry.update();
         timer.reset();
         while (frontRight.isBusy() && backRight.isBusy()) {
             if (timerOn && timer.seconds() >= time) return;
