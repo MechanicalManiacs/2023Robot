@@ -22,7 +22,6 @@ import java.util.Objects;
  */
 
 @Config
-@Autonomous
 public class MaxAngularVeloTuner extends LinearOpMode {
     public static double RUNTIME = 4.0;
 

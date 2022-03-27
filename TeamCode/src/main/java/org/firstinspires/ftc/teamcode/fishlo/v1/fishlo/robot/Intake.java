@@ -6,29 +6,41 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.gamepad.TriggerReader;
+import com.arcrobotics.ftclib.hardware.SensorDistance;
+import com.arcrobotics.ftclib.hardware.SensorDistanceEx;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.util.Position;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorREV2mDistance;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.robot.SubSystem;
+import org.firstinspires.ftc.teamcode.util.RegressionUtil;
 
 import java.time.OffsetDateTime;
 
 public class Intake extends SubSystem {
 
     public DcMotor arm;
-    public DcMotor intake;
+    public static DcMotor intake;
     public DcMotor duck;
-    public DcMotor duck2;
+
+    public DistanceSensor distance;
+
     int count = 0;
 
-    public CRServo capstoneClaw;
+    public Servo capstoneClaw;
 
     double coeff = 1;
 
@@ -60,67 +72,48 @@ public class Intake extends SubSystem {
         arm = robot.hardwareMap.dcMotor.get("arm");
         intake = robot.hardwareMap.dcMotor.get("intake");
         duck = robot.hardwareMap.dcMotor.get("carousel");
-        duck2 = robot.hardwareMap.dcMotor.get("carousel2");
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        capstoneClaw = robot.hardwareMap.crservo.get("capstoneClaw");
+        capstoneClaw = robot.hardwareMap.servo.get("capstoneClaw");
+        distance = robot.hardwareMap.get(DistanceSensor.class, "distance");
+        capstoneClaw.setDirection(Servo.Direction.REVERSE);
+    }
+
+    public enum BlockIn {
+        IN,
+        NOT_IN
     }
 
     @Override
     public void handle() {
-        count++;
-        if (count == 1) {
-            duck.setPower(0);
+        if (robot.gamepad2.x) {
+            capstoneClaw.setPosition(0.55);
         }
-        arm.setPower(-robot.gamepad2.left_stick_y/coeff);
-        capstoneClaw.setPower(-robot.gamepad2.right_stick_y/2);
-        if (robot.gamepad2.dpad_up) {
-            coeff = 1.5;
+        if (robot.gamepad2.a) {
+            capstoneClaw.setPosition(0);
         }
-        if (robot.gamepad2.dpad_down) {
-            coeff = 1;
+        if (robot.gamepad2.y) {
+            capstoneClaw.setPosition(0.7);
         }
-        if (robot.gamepad2.dpad_left) {
-            armToLevel(2, false, 0);
+        if (robot.gamepad2.b) {
+            capstoneClaw.setPosition(0.75);
         }
-        if (robot.gamepad2.dpad_right) {
-            armToLevel(0, false, 0);
-        }
-        else {
-            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-        double increment = 0.1;
-        if (robot.gamepad2.right_bumper) {
-            duck.setPower(-0.8);
-        }
+        arm.setPower(Range.clip(-robot.gamepad2.left_stick_y, -0.65, 0.65));
 
         duck.setPower(robot.gamepad2.right_stick_x);
-        duck2.setPower(robot.gamepad2.right_stick_x);
-
-        if (robot.gamepad2.x) {
-            duckTimer.reset();
-            while (duckTimer.seconds() <= 0.7) {
-                duck.setPower(-0.4);
-            }
-
-            duckTimer.reset();
-            while (duckTimer.seconds() <= 1.5){
-                duck.setPower(-0.8);
-            }
-            duck.setPower(0);
-        }
-
-        if (robot.gamepad2.right_trigger >= 0.5) {
-            intake.setPower(1);
-        }
-        else if (robot.gamepad2.left_trigger >= 0.5) {
-            intake.setPower(-0.5);
-        }
-        else if (robot.gamepad2.left_bumper) {
-            intake.setPower(-0.3);
+        if (!robot.gamepad2.right_bumper && !robot.gamepad2.left_bumper) {
+            intake.setPower(0);
         }
         else {
-            intake(IntakeState.OFF);
+            if (robot.gamepad2.right_bumper) {
+                intake.setPower(1);
+            }
+            if (robot.gamepad2.left_bumper) {
+                if (Drive.driveType == Drive.DriveControls.TANK) intake.setPower(-0.5);
+                else if (Drive.driveType == Drive.DriveControls.ARCADE) intake(IntakeState.REVERSE);
+            }
         }
+        robot.telemetry.addData("Block Status", isBlockIn());
+        robot.telemetry.update();
     }
 
     public enum IntakeState {
@@ -169,8 +162,12 @@ public class Intake extends SubSystem {
             intake.setPower(1);
         }
         else if (state == IntakeState.REVERSE) {
-            intake.setPower(-0.5);
+            intake.setPower(-1);
         }
+    }
+
+    public static void driveOuttake() {
+        intake.setPower(-0.6);
     }
 
     public void spinCarousel(String pos){
@@ -206,5 +203,12 @@ public class Intake extends SubSystem {
     @Override
     public void stop() {
         arm.setPower(0);
+    }
+
+    public BlockIn isBlockIn() {
+        BlockIn blockIn = BlockIn.NOT_IN;
+        if (distance.getDistance(DistanceUnit.INCH) <= 1.5) blockIn = BlockIn.IN;
+        else blockIn = BlockIn.NOT_IN;
+        return blockIn;
     }
 }

@@ -61,18 +61,18 @@ public class Drive extends SubSystem {
 
     MecanumDrive drive;
 
-    private enum DriveControls {
+    public enum DriveControls {
         TANK,
         ARCADE,
         NONE
     }
 
-    DriveControls[] driveControls = {DriveControls.ARCADE, DriveControls.TANK};
-    DriveControls driveType;
+    DriveControls[] driveControls = {DriveControls.TANK, DriveControls.ARCADE};
+    public static DriveControls driveType;
     int driveIndex = 0;
     boolean telemetryEnabled;
 
-    int coeff = 1;
+    double coeff = 1;
 
     /**
      * Construct a subsystem with the robot it applies to.
@@ -116,6 +116,10 @@ public class Drive extends SubSystem {
             }
         }
 
+        if (robot.gamepad1.right_trigger >= 0.5) {
+            Intake.driveOuttake();
+        }
+
         switch (driveType) {
             case ARCADE:
                 double y = -robot.gamepad1.left_stick_y; // Remember, this is reversed!
@@ -143,20 +147,23 @@ public class Drive extends SubSystem {
                 bl = -robot.gamepad1.left_stick_y / coeff;
                 br = -robot.gamepad1.right_stick_y / coeff;
                 if (robot.gamepad1.left_bumper) {
-                    fl = -1 / coeff;
-                    fr = 1 / coeff;
-                    bl = 1 / coeff;
-                    br = -1 / coeff;
+                    fl = -1.0 / coeff;
+                    fr = 1.0 / coeff;
+                    bl = 1.0 / coeff;
+                    br = -1.0 / coeff;
                 }
                 if (robot.gamepad1.right_bumper) {
-                    fl = 1 / coeff;
-                    fr = -1 / coeff;
-                    bl = -1 / coeff;
-                    br = 1 / coeff;
+                    fl = 1.0 / coeff;
+                    fr = -1.0 / coeff;
+                    bl = -1.0 / coeff;
+                    br = 1.0 / coeff;
                 }
                 if (robot.gamepad1.left_trigger >= 0.5) {
                     coeff = 2;
-                } else {
+                } else if (robot.gamepad1.a){
+                    coeff = 0.5;
+                }
+                else {
                     coeff = 1;
                 }
                 break;
@@ -171,17 +178,17 @@ public class Drive extends SubSystem {
         drive(fl, bl, fr, br);
         if (telemetryEnabled) {
             robot.telemetry.addData("Drive - Dat - Drive Controls", driveType.name());
-            robot.telemetry.addLine("Drive - Dat - Motors")
-                    .addData("frontLeft", fl)
-                    .addData("backLeft", bl)
-                    .addData("frontRight", fr)
-                    .addData("backRight", br);
-            robot.telemetry.addLine("Drive - Dat - Inputs")
-                    .addData("LeftY", -robot.gamepad1.left_stick_y)
-                    .addData("RightY", -robot.gamepad1.right_stick_y)
-                    .addData("LeftX", robot.gamepad1.left_stick_x)
-                    .addData("RightX", robot.gamepad1.right_stick_x);
-            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
+//            robot.telemetry.addLine("Drive - Dat - Motors")
+//                    .addData("frontLeft", fl)
+//                    .addData("backLeft", bl)
+//                    .addData("frontRight", fr)
+//                    .addData("backRight", br);
+//            robot.telemetry.addLine("Drive - Dat - Inputs")
+//                    .addData("LeftY", -robot.gamepad1.left_stick_y)
+//                    .addData("RightY", -robot.gamepad1.right_stick_y)
+//                    .addData("LeftX", robot.gamepad1.left_stick_x)
+//                    .addData("RightX", robot.gamepad1.right_stick_x);
+//            robot.telemetry.addData("arm pos", arm.getCurrentPosition());
         }
     }
 
